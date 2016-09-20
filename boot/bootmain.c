@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <aim/boot.h>
 
+
 __noreturn
 void bootmain(void)
 {

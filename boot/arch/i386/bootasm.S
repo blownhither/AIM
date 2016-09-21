@@ -32,8 +32,6 @@ _start:
     movw    %ax, %ss
                         # set cs in the future
 
-.text
-
 seta20.1:
     inb     $0x64,%al
     testb   $0x2,%al
@@ -53,7 +51,7 @@ seta20.2:
     orl     $CR0_PE, %eax
     movl    $eax, %cr0
 
-    ljmp    $(SEG_KCODE<<3),$start32
+    ljmpl   $(SEG_KCODE<<3),$start32
 .code32
 start32:
     movw    $(SEG_KDATA<<3),%ax
@@ -64,12 +62,16 @@ start32:
     movw    %ax,%fs
     movw    %ax,%gs
 
+.text
 bootasm:
     movl    $start, %esp    # TODO: why
     call    bootmain
     
-.data
+.p2align 2                  # TODO: why
 gdt:
     SEG_NULLASM
     SEG_ASM(STA_X|STA_R,0x0,0xffffffff)
     SEG_ASM(STA_W,0x0,0xffffffff)
+gdtdesc:
+    .word (gdtdesc − gdt − 1)
+    .long gdt

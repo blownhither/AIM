@@ -82,8 +82,8 @@ bootasm:
     movl    $_start, %esp    # TODO: why
     call    bootmain
 
-loop:
-    jmp     loop
+loop_boot:
+    jmp     loop_boot
     
 .p2align 2                  # TODO: why
 gdt:

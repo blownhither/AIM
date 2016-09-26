@@ -48,8 +48,8 @@
 //  .section .entry
 
 .code16                 // TODO: check
-.globl _start           // TODO: use bootasm?
-_start:
+.globl bootasm           // TODO: use bootasm?
+bootasm:
     cli                 // no interrupt
     xorw    %ax, %ax    // plain data seg 
     movw    %ax, %ds
@@ -92,8 +92,8 @@ start32:
 
     // TODO: clean BSS?!?!!?
 
-bootasm:
-    movl    $_start, %esp    // TODO: why
+
+    movl    $bootasm, %esp    // TODO: why
     call    bootmain
 
 /*loop_boot:

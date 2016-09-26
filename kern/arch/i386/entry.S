@@ -19,9 +19,19 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
-
+# .p2align2
 .text
 
-.globl _start
-_start:
+.globl master_early_entry
 
+
+master_early_entry:
+    cli     // no interrupt
+
+    // TODO: bss?!
+    push %ebp
+    mov %esp, %ebp
+    call master_early_init
+    pop %ebp
+    ret
+     

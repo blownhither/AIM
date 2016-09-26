@@ -25,7 +25,7 @@
  * linker script.
  */
 
-ENTRY(_start)
+ENTRY(bootasm)
 SECTIONS
 {
     . = 0x7c00;

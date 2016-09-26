@@ -55,10 +55,10 @@ void bootmain(void)
   elf = (elfhdr*)0x10000;  // scratch space
 
   // Read 1st page off disk
-  readseg((uint8_t*)elf, 8848, kOffset);
+  readseg((uint8_t*)elf, 7777, kOffset);
 
   // Is this an ELF executable?
-  if(*(uint32_t *)(elf->e_ident) != ELF_MAGIC)
+  if((*(uint32_t *)(elf->e_ident)) != ELF_MAGIC)
     return;  // let bootasm.S handle error
 
   // Load each program segment (ignores ph flags).

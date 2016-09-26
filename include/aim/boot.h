@@ -21,8 +21,40 @@
 
 #ifndef __ASSEMBLER__
 
-extern uint8_t mbr[];
+extern uint8_t *mbr;
 
+// from xv6/elf.h
+/*
+// File header
+struct elfhdr {
+  uint magic;  // must equal ELF_MAGIC
+  uchar elf[12];
+  ushort type;
+  ushort machine;
+  uint version;
+  uint entry;
+  uint phoff;
+  uint shoff;
+  uint flags;
+  ushort ehsize;
+  ushort phentsize;
+  ushort phnum;
+  ushort shentsize;
+  ushort shnum;
+  ushort shstrndx;
+};
+// Program section header
+struct proghdr {
+  uint type;
+  uint off;
+  uint vaddr;
+  uint paddr;
+  uint filesz;
+  uint memsz;
+  uint flags;
+  uint align;
+};
+*/
 #endif /* !__ASSEMBLER__ */
 
 #include <arch-boot.h>

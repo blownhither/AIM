@@ -21,11 +21,14 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <sys/types.h>
-
 // TODO :Adapt type from types.h, TODO: use exact num?
 typedef uint8_t uchar;
 typedef uint32_t uint;
 typedef uint16_t ushort;
+
+#include "elf.h"
+typedef elf32hdr_t elfhdr;
+typedef elf32_phdr_t proghdr;
 
 #include <aim/boot.h>
 
@@ -40,8 +43,8 @@ void readseg(uchar*, uint, uint);
 
 void bootmain(void)
 {
-  struct elfhdr *elf;
-  struct proghdr *ph, *eph;
+  elfhdr *elf;
+  proghdr *ph, *eph;
   void (*entry)(void);
   uchar* pa;
 
@@ -49,28 +52,28 @@ void bootmain(void)
   uint32_t kOffset = (*(uint32_t *)(mbr + SECTORSTART))*SECTSIZE;
   
 
-  elf = (struct elfhdr*)0x10000;  // scratch space
+  elf = (elfhdr*)0x10000;  // scratch space
 
   // Read 1st page off disk
   readseg((uint8_t*)elf, 8848, kOffset);
 
   // Is this an ELF executable?
-  if(elf->magic != ELF_MAGIC)
+  if(*(uint32_t *)(elf->e_ident) != ELF_MAGIC)
     return;  // let bootasm.S handle error
 
   // Load each program segment (ignores ph flags).
-  ph = (struct proghdr*)((uchar*)elf + elf->phoff);
-  eph = ph + elf->phnum;
+  ph = (proghdr*)((uchar*)elf + elf->e_phoff);
+  eph = ph + elf->e_phnum;
   for(; ph < eph; ph++){
-    pa = (uchar*)ph->paddr;
-    readseg(pa, ph->filesz, ph->off);
-    if(ph->memsz > ph->filesz)
-      stosb(pa + ph->filesz, 0, ph->memsz - ph->filesz);
+    pa = (uchar*)ph->p_paddr;
+    readseg(pa, ph->p_filesz, ph->p_offset);
+    if(ph->p_memsz > ph->p_filesz)
+      stosb(pa + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
   }
 
   // Call the entry point from the ELF header.
   // Does not return!
-  entry = (void(*)(void))(elf->entry);
+  entry = (void(*)(void))(elf->e_entry);
   entry();
 }
 

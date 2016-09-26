@@ -35,6 +35,7 @@ typedef uint16_t ushort;
 
 uint8_t *mbr;
 
+
 void readseg(uchar*, uint, uint);
 
 void bootmain(void)
@@ -44,14 +45,14 @@ void bootmain(void)
   void (*entry)(void);
   uchar* pa;
 
-  mbr = (uint8_t *)(0x7dbe);      // TODO: why
-  uint32_t kOffset = (*(uint32_t *)(mbr+SECTORSTART+MBRSIZE))*SECTSIZE;
+  mbr = (uint8_t *)(0x7c00 + 0x1ce);      // 2nd partition
+  uint32_t kOffset = (*(uint32_t *)(mbr + SECTORSTART))*SECTSIZE;
   
 
   elf = (struct elfhdr*)0x10000;  // scratch space
 
   // Read 1st page off disk
-  readseg((uint8_t*)elf, 8888, kOffset);
+  readseg((uint8_t*)elf, 8848, kOffset);
 
   // Is this an ELF executable?
   if(elf->magic != ELF_MAGIC)
@@ -112,7 +113,7 @@ readseg(uchar* pa, uint count, uint offset)
   pa -= offset % SECTSIZE;
 
   // Translate from bytes to sectors; kernel starts at sector 1.
-  offset = (offset / SECTSIZE) + 1;
+  offset = (offset / SECTSIZE);
 
   // If this is too slow, we could read lots of sectors at a time.
   // We'd write more to memory than asked, but it doesn't matter --

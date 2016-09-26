@@ -20,7 +20,11 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+// #include "mmu.h"
+#include "asm.h"
+
 // TODO: from asm.h
+/*
 #define SEG_ASM(type,base,lim) \
     .word (((lim) >> 12) & 0xffff), ((base) & 0xffff); \
     .byte (((base) >> 16) & 0xff), (0x90 | (type)), \
@@ -33,8 +37,9 @@
  #define STA_W 0x2 // Writeable (non−executable segments)
  #define STA_R 0x2 // Readable (executable segments)
  #define STA_A 0x1 // Accessed
-
+*/
  #define CR0_PE 0x00000001 
+
 
 // TODO: from mmu.h
 #define SEG_KCODE 1
@@ -72,7 +77,8 @@ seta20.2:
     movl    %eax, %cr0
 
     # ljmpl   $(1<<3),$start32
-    ljmpl   $(SEG_KCODE<<3),$start32
+    ljmp   $(SEG_KCODE<<3),$start32
+    
 .code32
 start32:
     # movw    $(2<<3),%ax // set up seg regs
@@ -90,12 +96,12 @@ bootasm:
     movl    $_start, %esp    // TODO: why
     call    bootmain
 
-loop_boot:
+/*loop_boot:
     jmp     loop_boot
-    
+*/    
 .p2align 2                  // TODO: why
 gdt:
-    .long 0    # SEG_NULLASM
+    SEG_NULLASM
     SEG_ASM(STA_X|STA_R,0x0,0xffffffff)
     SEG_ASM(STA_W,0x0,0xffffffff)
 gdtdesc:

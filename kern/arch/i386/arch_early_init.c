@@ -25,7 +25,6 @@
 
 void arch_early_init(void)
 {
-    while(1);
-    // TODO: low energy
+
 }
 

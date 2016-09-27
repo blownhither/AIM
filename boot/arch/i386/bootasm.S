@@ -79,8 +79,8 @@ loop_boot:
 .p2align 2              // align 2^2 B
 gdt:
     SEG_NULLASM
-    SEG_ASM(STA_X|STA_R,0x0,0xffffffff)
-    SEG_ASM(STA_W,0x0,0xffffffff)
+    SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)
+    SEG_ASM(STA_W, 0x0, 0xffffffff)
 gdtdesc:
     .word (gdtdesc - gdt - 1)
     .long gdt

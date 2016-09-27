@@ -19,16 +19,16 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
-# .p2align2
+
 .text
 
 .globl master_early_entry
 
-
 master_early_entry:
     cli     // no interrupt
 
-    // TODO: bss?!
+    // clean .bss in the future
+    
     push %ebp
     mov %esp, %ebp
     call master_early_init

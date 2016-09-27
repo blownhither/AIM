@@ -21,10 +21,24 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <sys/types.h>
+typedef uint8_t uchar;
+typedef uint32_t uint;
+typedef uint16_t ushort;
+
 #include <aim/init.h>
+#include "aim/boot.h"
+
+extern uint32_t __bss_start_kern, __bss_end_kern;
 
 void arch_early_init(void)
 {
+
+}
+
+void clear_bss_kern(){
+    if (&__bss_end_kern > &__bss_start_kern)
+        stosb(&__bss_start_kern, 0, 
+            &__bss_end_kern - &__bss_start_kern);
 
 }
 

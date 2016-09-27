@@ -28,10 +28,12 @@
 ENTRY(master_early_entry)
 SECTIONS
 {
-    . = 0x20000;        //TODO: why
+    . = 0x20000;  
     .text   : {*(.text);}
     .data   : {*(.data);}
+    __bss_start_kern = .; 
     .bss    : {*(.bss);}
+    __bss_end_kern = .;
     .end = .;
 }
 

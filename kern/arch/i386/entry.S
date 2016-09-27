@@ -20,6 +20,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+
 .text
 
 .globl master_early_entry
@@ -27,7 +28,7 @@
 master_early_entry:
     cli     // no interrupt
 
-    // clean .bss in the future
+    call clear_bss_kern
     
     push %ebp
     mov %esp, %ebp

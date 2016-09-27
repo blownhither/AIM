@@ -20,107 +20,109 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <sys/types.h>
-// TODO :Adapt type from types.h, TODO: use exact num?
+#include "sys/types.h"
+// Adapt types from types.h
 typedef uint8_t uchar;
 typedef uint32_t uint;
 typedef uint16_t ushort;
 
 #include "elf.h"
+// Adapt header struct from elf.h
 typedef elf32hdr_t elfhdr;
 typedef elf32_phdr_t proghdr;
 
-#include <aim/boot.h>
+#include "aim/boot.h"
 
 #define SECTSIZE  512   
-#define SECTORSTART 8   
-#define MBRSIZE 16
+#define P_SEC_OFFS 8   
 
 uint8_t *mbr;
-
 
 void readseg(uchar*, uint, uint);
 
 void bootmain(void)
 {
-  elfhdr *elf;
-  proghdr *ph, *eph;
-  void (*entry)(void);
-  uchar* pa;
+    elfhdr *elf;
+    proghdr *ph, *eph;
+    void (*entry)(void);
+    uchar* pa;
 
-  mbr = (uint8_t *)(0x7c00 + 0x1ce);      // 2nd partition
-  uint32_t kOffset = (*(uint32_t *)(mbr + SECTORSTART))*SECTSIZE;
-  
+    mbr = (uint8_t *)(0x7c00 + 0x1ce);          // 2nd partition
+    uint32_t hd_offs = (*(uint32_t *)(mbr + P_SEC_OFFS)) * SECTSIZE; 
+                                                // calc disk offs
 
-  elf = (elfhdr*)0x10000;  // scratch space
+    elf = (elfhdr*)0x10000;                     // scratch space
 
-  // Read 1st page off disk
-  readseg((uint8_t*)elf, 7777, kOffset);
+    // Read 1st page off disk
+    readseg((uint8_t*)elf, SECTSIZE * 16, hd_offs);
 
-  // Is this an ELF executable?
-  if((*(uint32_t *)(elf->e_ident)) != ELF_MAGIC)
-    return;  // let bootasm.S handle error
+    // Is this an ELF executable?
+    if((*(uint32_t *)(elf->e_ident)) != ELF_MAGIC)
+        return;  // let bootasm.S handle error
 
-  // Load each program segment (ignores ph flags).
-  ph = (proghdr*)((uchar*)elf + elf->e_phoff);
-  eph = ph + elf->e_phnum;
-  for(; ph < eph; ph++){
-    pa = (uchar*)ph->p_paddr;
-    readseg(pa, ph->p_filesz, ph->p_offset);
-    if(ph->p_memsz > ph->p_filesz)
-      stosb(pa + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
-  }
+    // Load each program segment (ignores ph flags).
+    ph = (proghdr*)((uchar*)elf + elf->e_phoff);
+    eph = ph + elf->e_phnum;
 
-  // Call the entry point from the ELF header.
-  // Does not return!
-  entry = (void(*)(void))(elf->e_entry);
-  entry();
+    for(; ph < eph; ph++){
+        pa = (uchar*)ph->p_paddr;
+        readseg(pa, ph->p_filesz, ph->p_offset + hd_offs);
+        if(ph->p_memsz > ph->p_filesz)
+            stosb(pa + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
+    }
+
+
+    // Call the entry point from the ELF header.
+    // Does not return!
+    entry = (void(*)(void))(elf->e_entry);
+    entry();
 }
 
-void
+    void
 waitdisk(void)
 {
-  // Wait for disk ready.
-  while((inb(0x1F7) & 0xC0) != 0x40)
-    ;
+    // Wait for disk ready.
+    while((inb(0x1F7) & 0xC0) != 0x40)
+        ;
 }
 
 // Read a single sector at offset into dst.
-void
+    void
 readsect(void *dst, uint offset)
 {
-  // Issue command.
-  waitdisk();
-  outb(0x1F2, 1);   // count = 1
-  outb(0x1F3, offset);
-  outb(0x1F4, offset >> 8);
-  outb(0x1F5, offset >> 16);
-  outb(0x1F6, (offset >> 24) | 0xE0);
-  outb(0x1F7, 0x20);  // cmd 0x20 - read sectors
+    // Issue command.
+    waitdisk();
+    outb(0x1F2, 1);   // count = 1
+    outb(0x1F3, offset);
+    outb(0x1F4, offset >> 8);
+    outb(0x1F5, offset >> 16);
+    outb(0x1F6, (offset >> 24) | 0xE0);
+    outb(0x1F7, 0x20);  // cmd 0x20 - read sectors
 
-  // Read data.
-  waitdisk();
-  insl(0x1F0, dst, SECTSIZE/4);
+    // Read data.
+    waitdisk();
+    insl(0x1F0, dst, SECTSIZE/4);
 }
 
 // Read 'count' bytes at 'offset' from kernel into physical address 'pa'.
 // Might copy more than asked.
-void
+    void
 readseg(uchar* pa, uint count, uint offset)
 {
-  uchar* epa;
+    uchar* epa;
 
-  epa = pa + count;
+    epa = pa + count;
 
-  // Round down to sector boundary.
-  pa -= offset % SECTSIZE;
+    // Round down to sector boundary.
+    pa -= offset % SECTSIZE;
 
-  // Translate from bytes to sectors; kernel starts at sector 1.
-  offset = (offset / SECTSIZE);
+    // Translate from bytes to sectors; kernel starts at sector 1.
+    offset = (offset / SECTSIZE);
 
-  // If this is too slow, we could read lots of sectors at a time.
-  // We'd write more to memory than asked, but it doesn't matter --
-  // we load in increasing order.
-  for(; pa < epa; pa += SECTSIZE, offset++)
-    readsect(pa, offset);
+    // If this is too slow, we could read lots of sectors at a time.
+    // We'd write more to memory than asked, but it doesn't matter --
+    // we load in increasing order.
+    for(; pa < epa; pa += SECTSIZE, offset++)
+        readsect(pa, offset);
 }
+

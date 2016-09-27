@@ -21,25 +21,33 @@
 #endif /* HAVE_CONFIG_H */
 
 #include "sys/types.h"
-// Adapt types from types.h
+// Adapt absolute types from types.h, arch-free
 typedef uint8_t uchar;
 typedef uint32_t uint;
 typedef uint16_t ushort;
 
-#include "elf.h"
-// Adapt header struct from elf.h
-typedef elf32hdr_t elfhdr;
-typedef elf32_phdr_t proghdr;
+/** An example of hdr defination from arch-boot.h's, arch-free
+ * // Adapt header struct from elf.h
+ * typedef elf32hdr_t elfhdr;
+ * typedef elf32_phdr_t proghdr;
+ **/
 
 #include "aim/boot.h"
 
+// Size of single sector
 #define SECTSIZE  512   
+// Physical sector number offset in MBR entry
 #define P_SEC_OFFS 8   
 
+// Pointer to mbr entrys at fixed addr
 uint8_t *mbr;
 
 void readseg(uchar*, uint, uint);
 
+/**
+ * Analyze elf at 2nd partition, load prog segments into memory,
+ * clean bss and call its entry
+ **/
 void bootmain(void)
 {
     elfhdr *elf;
@@ -47,33 +55,39 @@ void bootmain(void)
     void (*entry)(void);
     uchar* pa;
 
-    mbr = (uint8_t *)(0x7c00 + 0x1ce);          // 2nd partition
+    mbr = (uint8_t *)(0x7c00 + 0x1ce);      // 2nd partition
     uint32_t hd_offs = (*(uint32_t *)(mbr + P_SEC_OFFS)) * SECTSIZE; 
-                                                // calc disk offs
+                                            // calc disk offs
 
-    elf = (elfhdr*)0x10000;                     // scratch space
+    elf = (elfhdr*)0x10000;                 // scratch space
 
-    // Read 1st page off disk
+    // Read at least all headers into buffer
     readseg((uint8_t*)elf, SECTSIZE * 16, hd_offs);
 
-    // Is this an ELF executable?
-    if((*(uint32_t *)(elf->e_ident)) != ELF_MAGIC)
-        return;  // let bootasm.S handle error
+    // check MAGIC (using bit op to avoid pointer aliasing)
+    uint32_t magic = 0;
+    magic = elf->e_ident[3] << 24 | elf->e_ident[2] << 16 
+        | elf->e_ident[1] << 8 | elf->e_ident[0];
+    if(magic != ELF_MAGIC)
+        return;                             // bootasm.S will be in inf loop
 
-    // Load each program segment (ignores ph flags).
+    // Load each prog seg (ignores ph flags).
     ph = (proghdr*)((uchar*)elf + elf->e_phoff);
+    // End of prog hdr
     eph = ph + elf->e_phnum;
 
     for(; ph < eph; ph++){
+        // Assigned memory addr
         pa = (uchar*)ph->p_paddr;
+        // Read seg from disk
         readseg(pa, ph->p_filesz, ph->p_offset + hd_offs);
+        // Clean .bss
         if(ph->p_memsz > ph->p_filesz)
             stosb(pa + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
     }
 
-
     // Call the entry point from the ELF header.
-    // Does not return!
+    // Does not return! (jmp)
     entry = (void(*)(void))(elf->e_entry);
     entry();
 }

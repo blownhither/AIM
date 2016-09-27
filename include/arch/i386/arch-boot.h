@@ -21,6 +21,10 @@
 
 #ifndef __ASSEMBLER__
 
+#include "elf.h"
+// Adapt header struct from elf.h for i386
+typedef elf32hdr_t elfhdr;
+typedef elf32_phdr_t proghdr;
 
 // MAGIC_NUMBER for x86
 #define ELF_MAGIC 0x464C457FU  // "\x7FELF" in little endian

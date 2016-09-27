@@ -20,35 +20,15 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-// #include "mmu.h"
 #include "asm.h"
 
-// TODO: from asm.h
-/*
-#define SEG_ASM(type,base,lim) \
-    .word (((lim) >> 12) & 0xffff), ((base) & 0xffff); \
-    .byte (((base) >> 16) & 0xff), (0x90 | (type)), \
-    (0xC0 | (((lim) >> 28) & 0xf)), (((base) >> 24) & 0xff)
-
- #define STA_X 0x8 // Executable segment
-
- #define STA_E 0x4 // Expand down (non−executable segments)
- #define STA_C 0x4 // Conforming code segment (executable only)
- #define STA_W 0x2 // Writeable (non−executable segments)
- #define STA_R 0x2 // Readable (executable segments)
- #define STA_A 0x1 // Accessed
-*/
- #define CR0_PE 0x00000001 
-
-
-// TODO: from mmu.h
+// reduced from mmu.h, x86 memory management
+#define CR0_PE 0x00000001 
 #define SEG_KCODE 1
 #define SEG_KDATA 2
 
-//  .section .entry
-
-.code16                 // TODO: check
-.globl bootasm           // TODO: use bootasm?
+.code16  
+.globl bootasm  
 bootasm:
     cli                 // no interrupt
     xorw    %ax, %ax    // plain data seg 
@@ -57,49 +37,46 @@ bootasm:
     movw    %ax, %ss
                         // set cs in the future
 
-seta20.1:		// shut down A20
-    inb     $0x64,%al
-    testb   $0x2,%al
+seta20.1:		        // shut down A20
+    inb     $0x64, %al
+    testb   $0x2, %al
     jnz     seta20.1
-    movb    $0xd1,%al
-    outb    %al,$0x64
+    movb    $0xd1, %al
+    outb    %al, $0x64
 
 seta20.2:
-    inb $0x64,%al
-    testb $0x2,%al
-    jnz seta20.2
-    movb $0xdf,%al
-    outb %al,$0x60
+    inb     $0x64, %al
+    testb   $0x2, %al
+    jnz     seta20.2
+    movb    $0xdf, %al
+    outb    %al, $0x60
 
     lgdt    gdtdesc     // load global descrptor table
     movl    %cr0, %eax  // switch to protected mode
     orl     $CR0_PE, %eax
     movl    %eax, %cr0
-
-    # ljmpl   $(1<<3),$start32
-    ljmp   $(SEG_KCODE<<3),$start32
+                        // set cs
+    ljmp   $(SEG_KCODE<<3), $start32
     
 .code32
 start32:
-    # movw    $(2<<3),%ax // set up seg regs
-    movw    $(SEG_KDATA<<3),%ax
-    movw    %ax,%ds
-    movw    %ax,%es
-    movw    %ax,%ss
-    movw    $0,%ax
-    movw    %ax,%fs
-    movw    %ax,%gs
+    movw    $(SEG_KDATA<<3), %ax
+    movw    %ax, %ds
+    movw    %ax, %es
+    movw    %ax, %ss
+    movw    $0, %ax
+    movw    %ax, %fs
+    movw    %ax, %gs
 
-    // TODO: clean BSS?!?!!?
+    // clean bss in the future
 
+    movl    $bootasm, %esp 
+    call    bootmain    // $esp = 0x7bfc
 
-    movl    $bootasm, %esp    // TODO: why
-    call    bootmain
-
-/*loop_boot:
+loop_boot:
     jmp     loop_boot
-*/    
-.p2align 2                  // TODO: why
+
+.p2align 2              // align 2^2 B
 gdt:
     SEG_NULLASM
     SEG_ASM(STA_X|STA_R,0x0,0xffffffff)

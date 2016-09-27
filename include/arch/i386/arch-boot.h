@@ -67,7 +67,9 @@ stosb(void *addr, int data, int cnt)
                "0" (addr), "1" (cnt), "a" (data) :
                "memory", "cc");
 }
+# else /* __ASSEMBLER__ */
 
+// arch-free macros for assbmbler 
 
 #endif /* !__ASSEMBLER__ */
 

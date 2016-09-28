@@ -19,7 +19,11 @@
 #ifndef _ARCH_BOOT_H
 #define _ARCH_BOOT_H
 
+#include "arch/i386/asm.h"
+
 #ifndef __ASSEMBLER__
+
+
 
 #include "elf.h"
 // Adapt header struct from elf.h for i386
@@ -69,7 +73,8 @@ stosb(void *addr, int data, int cnt)
 }
 # else /* __ASSEMBLER__ */
 
-// arch-free macros for assbmbler 
+// arch-free macros for assbmbler
+//
 
 #endif /* !__ASSEMBLER__ */
 

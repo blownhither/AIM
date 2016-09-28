@@ -1,0 +1,182 @@
+`configure' configures AIM 0.2 to adapt to many kinds of systems.
+
+Usage: ./configure [OPTION]... [VAR=VALUE]...
+
+To assign environment variables (e.g., CC, CFLAGS...), specify them as
+VAR=VALUE.  See below for descriptions of some of the useful variables.
+
+Defaults for the options are specified in brackets.
+
+Configuration:
+  -h, --help              display this help and exit
+      --help=short        display options specific to this package
+      --help=recursive    display the short help of all the included packages
+  -V, --version           display version information and exit
+  -q, --quiet, --silent   do not print `checking ...' messages
+      --cache-file=FILE   cache test results in FILE [disabled]
+  -C, --config-cache      alias for `--cache-file=config.cache'
+  -n, --no-create         do not create output files
+      --srcdir=DIR        find the sources in DIR [configure dir or `..']
+
+Installation directories:
+  --prefix=PREFIX         install architecture-independent files in PREFIX
+                          [/usr/local]
+  --exec-prefix=EPREFIX   install architecture-dependent files in EPREFIX
+                          [PREFIX]
+
+By default, `make install' will install all the files in
+`/usr/local/bin', `/usr/local/lib' etc.  You can specify
+an installation prefix other than `/usr/local' using `--prefix',
+for instance `--prefix=$HOME'.
+
+For better control, use the options below.
+
+Fine tuning of the installation directories:
+  --bindir=DIR            user executables [EPREFIX/bin]
+  --sbindir=DIR           system admin executables [EPREFIX/sbin]
+  --libexecdir=DIR        program executables [EPREFIX/libexec]
+  --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
+  --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
+  --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
+  --libdir=DIR            object code libraries [EPREFIX/lib]
+  --includedir=DIR        C header files [PREFIX/include]
+  --oldincludedir=DIR     C header files for non-gcc [/usr/include]
+  --datarootdir=DIR       read-only arch.-independent data root [PREFIX/share]
+  --datadir=DIR           read-only architecture-independent data [DATAROOTDIR]
+  --infodir=DIR           info documentation [DATAROOTDIR/info]
+  --localedir=DIR         locale-dependent data [DATAROOTDIR/locale]
+  --mandir=DIR            man documentation [DATAROOTDIR/man]
+  --docdir=DIR            documentation root [DATAROOTDIR/doc/aim]
+  --htmldir=DIR           html documentation [DOCDIR]
+  --dvidir=DIR            dvi documentation [DOCDIR]
+  --pdfdir=DIR            pdf documentation [DOCDIR]
+  --psdir=DIR             ps documentation [DOCDIR]
+
+Program names:
+  --program-prefix=PREFIX            prepend PREFIX to installed program names
+  --program-suffix=SUFFIX            append SUFFIX to installed program names
+  --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+
+Optional Features:
+  --disable-option-checking  ignore unrecognized --enable/--with options
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-silent-rules   less verbose build output (undo: "make V=1")
+  --disable-silent-rules  verbose build output (undo: "make V=0")
+  --enable-dependency-tracking
+                          do not reject slow dependency extractors
+  --disable-dependency-tracking
+                          speeds up one-time build
+  --enable-debug          enable Debugging (kpdebug)
+  --disable-debug         disable Debugging (kpdebug)
+  --enable-tests          enable in-kernel test framework
+  --disable-tests         disable in-kernel test framework
+  --enable-firmware       enable simple firmware shipped with AIMv6
+  --disable-firmware      disable simple firmware shipped with AIMv6
+  --enable-bootloader     enable simple bootloader shipped with AIMv6
+  --disable-bootloader    disable simple bootloader shipped with AIMv6
+  --enable-loongson3a-ram-detection
+                          enable RAM space detection on Loongson 3A port
+                          (RECOMMENDED)
+  --disable-loongson3a-ram-detection
+                          disable RAM space detection on Loongson 3A port
+                          (RECOMMENDED)
+  --enable-pagesize-16k   enable 16K pages (for Loongson 3A)
+  --disable-pagesize-16k  disable 16K pages (for Loongson 3A)
+  --enable-ide-bmdma      enable PCI IDE Bus-mastering DMA
+  --disable-ide-bmdma     disable PCI IDE Bus-mastering DMA
+  --enable-io-mem         enable memory-mapped IO driver
+  --disable-io-mem        disable memory-mapped IO driver
+  --enable-io-mem-root    enable memory-mapped IO bus as device tree root
+  --disable-io-mem-root   disable memory-mapped IO bus as device tree root
+  --enable-io-port        enable port IO driver
+  --disable-io-port       disable port IO driver
+  --enable-io-port-root   enable port IO bus as device tree root
+  --disable-io-port-root  disable port IO bus as device tree root
+  --enable-uart-lite      enable UART-lite driver
+  --disable-uart-lite     disable UART-lite driver
+  --enable-uart-msim      enable MSIM UART driver
+  --disable-uart-msim     disable MSIM UART driver
+  --enable-uart-ns16550   enable NS16550 UART driver
+  --disable-uart-ns16550  disable NS16550 UART driver
+  --enable-block-msim     enable MSIM block device driver
+  --disable-block-msim    disable MSIM block device driver
+  --enable-sd-zynq        enable zynq SD driver
+  --disable-sd-zynq       disable zynq SD driver
+  --enable-timer-a9       enable Cortex-A9 MPCore timer driver
+  --disable-timer-a9      disable Cortex-A9 MPCore timer driver
+  --enable-bus-mapper     enable bus mapper driver
+  --disable-bus-mapper    disable bus mapper driver
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-msim-kbd-pa=ARG  set MSIM keyboard physical address
+  --with-msim-lp-pa=ARG   set MSIM printer physical address
+  --with-msim-disk-pa=ARG set MSIM disk physical address
+  --with-msim-order-pa=ARG
+                          set MSIM IPC device physical address
+  --with-msim-mb-base=ARG set MSIM IPC device mailbox base address
+  --with-msim-mb-order=ARG
+                          set order of MSIM IPC device mailbox (size=1<<order)
+  --with-msim-rtc-pa=ARG  set MSIM real time clock physical address
+  --with-msim-firmware-bin=ARG
+                          set MSIM firmware binary file name
+  --with-msim-disk-img=ARG
+                          set MSIM disk image file name
+  --with-highram-base=ARG set MIPS high RAM base address
+  --with-highram-size=ARG set MIPS high RAM size
+  --with-ram-physbase=ARG set physical memory start point
+  --with-kern-start=ARG   set kernel loading physical address
+  --with-mem-size=ARG     set amount of memory installed
+  --with-cpus=ARG         set number of cores
+  --with-max-cpus=ARG     set maximum number of cores
+  --with-cpu-freq=ARG     set cpu ticks per second
+  --with-kern-base=ARG    set start of kernel address
+  --with-kmmap-base=ARG   set start of kernel dynamic mapping
+  --with-reserved-base=ARG
+                          set start of reserved high address
+  --with-usertop=ARG      set top of user program address space
+  --with-ustacksize=ARG   set size of user stack
+  --with-kstacksize=ARG   set size of kernel stack
+  --with-root-partition-id=ARG
+                          set root partition number
+  --with-max-processes=ARG
+                          set maximum number of processes
+  --with-pipe-size=ARG    set pipe size
+  --with-fwstack-order=ARG
+                          set order of firmware stack per CPU (size=1<<order)
+  --with-timer-freq=ARG   set timer interrupt frequency
+  --with-primary-console=ARG
+                          set primary console
+  --with-primary-storage=ARG
+                          set primary storage
+  --with-primary-timing=ARG
+                          set primary timing
+  --with-simple-allocator=ARG
+                          set non-caching memory object allocator
+  --with-page-allocator=ARG
+                          set page allocator
+  --with-caching-allocator=ARG
+                          set caching allocator
+  --with-dev-index=ARG    set device index
+  --with-kmmap-keeper=ARG set kmmap keeper
+
+Some influential environment variables:
+  CC          C compiler command
+  CFLAGS      C compiler flags
+  LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
+              nonstandard directory <lib dir>
+  LIBS        libraries to pass to the linker, e.g. -l<library>
+  CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
+              you have headers in a nonstandard directory <include dir>
+  CCAS        assembler compiler command (defaults to CC)
+  CCASFLAGS   assembler compiler flags (defaults to CFLAGS)
+  ARCH        set target architecture
+  MACH        set target machine
+
+Use these variables to override the choices made by `configure' or to help
+it to find libraries and programs with nonstandard names/locations.
+
+Report bugs to <davidgao1001@gmail.com>.

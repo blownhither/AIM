@@ -28,7 +28,7 @@
 master_early_entry:
     cli     // no interrupt
 
-   # call clear_bss_kern
+    call clear_bss_kern
     
     push %ebp
     mov %esp, %ebp

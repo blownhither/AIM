@@ -33,7 +33,13 @@ SECTIONS
         *bootasm.o(.text)
         *(.text);
     }
-    .data : { *(.data) }
-    .bss : { *(.bss) }
+    .data : { *(.data) ;}
+    
+    .bss : { 
+        __bss_start_boot = .;
+        *(.bss) ;
+        __bss_end_boot = .;
+    }
+    
     .end = .;
 }

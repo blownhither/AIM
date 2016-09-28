@@ -68,7 +68,6 @@ start32:
     movw    %ax, %fs
     movw    %ax, %gs
 
-    // clean bss in the future
 
     movl    $bootasm, %esp 
     call    bootmain    // $esp = 0x7bfc

@@ -92,6 +92,7 @@ void bootmain(void)
     entry();
 }
 
+// the following codes are arch-free when out and in is properly replaced
     void
 waitdisk(void)
 {

@@ -31,9 +31,13 @@ SECTIONS
     . = 0x20000;  
     .text   : {*(.text);}
     .data   : {*(.data);}
-    __bss_start_kern = .; 
-    .bss    : {*(.bss);}
-    __bss_end_kern = .;
+    
+    .bss    : {
+        __bss_start_kern = .; 
+        *(.bss);
+        __bss_end_kern = .;
+    }
+    
     .end = .;
 }
 

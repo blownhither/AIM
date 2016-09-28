@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include <aim/init.h>
 
-void sleep1();
+void sleep1();  // from each arch
 
 // __noreturn
 void master_early_init(void)
@@ -37,16 +37,3 @@ panic:
 }
 
 
-void sleep1(){
-    /*  // nice try... but int80 is not yet implemented
-    __asm__("mov $0x1,  %%ecx ;mov $0x0,  %%edx ;"::);
-    __asm__("pushl  %%eax ;pushl  %%ebx ;pushl  %%ecx ;"::);
-    __asm__("mov  %%ecx, -0x8( %%esp);mov  %%edx, -0x4( %%esp);mov $162,  %%eax ;"::);
-    __asm__("lea -0x8( %%esp),  %%ebx ;xor  %%ecx,  %%ecx ;int $0x80 ;"::);
-    __asm__("pop  %%ecx ;pop  %%ebx ;pop  %%eax ;ret;"::);
-    */
-    __asm__("cli;"::);
-    while(1)
-        __asm__("hlt;"::);
-
-}

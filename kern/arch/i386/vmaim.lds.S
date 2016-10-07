@@ -38,6 +38,10 @@ SECTIONS
 	.bss    : {
         __bss_start_kern = .; 
         *(.bss);
+        . = ALIGN(4096);
+        PROVIDE(__kstack_base = .); // using provide to give glb var
+        . += KSTACKSIZE;
+        PROVIDE(__kstack_top = .);
         __bss_end_kern = .;
     }
 

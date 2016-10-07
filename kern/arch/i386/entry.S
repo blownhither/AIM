@@ -36,10 +36,12 @@ push	%eax		// ebp=0
 mov	%esp, %ebp
 */
 
-    call clear_bss_kern
-    
-    push %ebp
+    mov	$__kstack_top, %esp
+    xor	%eax, %eax
+    push	%eax		// eip=0
+    push	%eax		// ebp=0
     mov %esp, %ebp
+    call clear_bss_kern
 
     call master_early_init
 

@@ -34,6 +34,7 @@ void master_early_init(void)
 
 panic:
     sleep1();
+    
 }
 
 

@@ -28,7 +28,7 @@ typedef uint16_t ushort;
 #include <aim/init.h>
 #include "aim/boot.h"
 
-extern uint32_t __bss_start_kern, __bss_end_kern;
+
 
 typedef struct segment_descriptor {
     uint64_t limit_12_27 :16;
@@ -72,13 +72,14 @@ void arch_early_init(void)
     
 }
 
+extern uint32_t __bss_start_kern, __bss_end_kern;
+
 void clear_bss_kern(){
     if (&__bss_end_kern > &__bss_start_kern)
         stosb(&__bss_start_kern, 0, 
             &__bss_end_kern - &__bss_start_kern);
 
 }
-
 
 void sleep1(){
     /*  // nice try... but int80 is not yet implemented

@@ -1,1 +1,1 @@
-#xv6
+#aim-public

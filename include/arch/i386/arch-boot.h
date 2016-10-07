@@ -34,10 +34,10 @@ typedef elf32_phdr_t proghdr;
 #define ELF_MAGIC 0x464C457FU  // "\x7FELF" in little endian
 
 // from xv6/x86.h
-static inline uchar
-inb(ushort port)
+static inline uint8_t
+inb(uint16_t port)
 {
-  uchar data;
+  uint8_t data;
 
   asm volatile("in %1,%0" : "=a" (data) : "d" (port));
   return data;
@@ -51,7 +51,7 @@ insl(int port, void *addr, int cnt)
                "memory", "cc");
 }
 static inline void
-outb(ushort port, uchar data)
+outb(uint16_t port, uint8_t data)
 {
   asm volatile("out %0,%1" : : "a" (data), "d" (port));
 }

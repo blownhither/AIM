@@ -20,46 +20,26 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#define __LDSCRIPT__
-
 /*
  * Using the C preprocessor, we allow includes and macro expansion in this
  * linker script.
  */
 
-ENTRY(_start)
-
-MEMORY
-{
-	MBR (rwx) :
-		ORIGIN = 0x7C00,
-		LENGTH = 446
-	BSS (rw) :
-		ORIGIN = 0x7E00,
-		LENGTH = 77200
-}
-
+ENTRY(bootasm)
 SECTIONS
 {
-	.text : {
-		/* entry comes first */
-		PROVIDE(stacktop = .);
-		PROVIDE(mbr = .);
-		*(.entry);
-		/* everything else */
-		*(.text);
-		*(.rodata);
-		*(.data);
-	} > MBR
-	/* BSS kept away from MBR */
-	.bss : {
-		PROVIDE(bss_start = .);
-		*(.bss);
-		PROVIDE(bss_end = .);
-	} > BSS
-	/* discard unneeded exception frame */
-	/DISCARD/ : {
-		*(.eh_frame);
-	}
+    . = 0x7c00;
+    .text : { 
+        *bootasm.o(.text)
+        *(.text);
+    }
+    .data : { *(.data) ;}
+    
+    .bss : { 
+        __bss_start_boot = .;
+        *(.bss) ;
+        __bss_end_boot = .;
+    }
+    
+    .end = .;
 }
-

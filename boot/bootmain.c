@@ -20,85 +20,124 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <sys/types.h>
-#include <aim/boot.h>
-#include <elf.h>
-#include <asm.h>
+#include "sys/types.h"
+// Adapt absolute types from types.h, arch-free
+typedef uint8_t uchar;
+typedef uint32_t uint;
+typedef uint16_t ushort;
 
-#define ELF_BUF_SIZE	4096
+/** An example of hdr defination from arch-boot.h's, arch-free
+ * // Adapt header struct from elf.h
+ * typedef elf32hdr_t elfhdr;
+ * typedef elf32_phdr_t proghdr;
+ **/
 
-static uint8_t elf_hdr_buf[ELF_BUF_SIZE];
+#include "aim/boot.h"
 
-void readseg(void *pa, uint32_t count, uint32_t offset)
-{
-	void *epa = pa + count;
-	// Round down to sector boundary.
-	pa -= offset % SECT_SIZE;
-	// Translate from bytes to sectors; kernel starts at sector 1.
-	offset = offset / SECT_SIZE;
-	// we load in increasing order.
-	while (pa < epa) {
-		readsect(pa, offset);
-		pa += SECT_SIZE;
-		offset++;
-	}
-}
+// Size of single sector
+#define SECTSIZE  512   
+// Physical sector number offset in MBR entry
+#define P_SEC_OFFS 8   
 
-static inline
-bool is_elf(elf_hdr *elf)
-{
-	/*static const uint8_t magic[] = {
-		0x7f, 0x45, 0x4c, 0x46,
-		0x02, 0x01, 0x01, 0x00,
-		0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00
-	};
-	for (int i = 0; i < sizeof(magic); i++) {
-		if (elf->e_ident[i] != magic[i]) return false;
-	}*/
-	return true;
-}
+// Pointer to mbr entrys at fixed addr
+uint8_t *mbr;
 
-static inline
-uint32_t get_lba(int n) // 1-4
-{
-	uint32_t lba;
-	for (int i = 0; i < 4; i++) {
-		((uint8_t *)&lba)[i] = mbr[446 + 16 * (n - 1) + 8 + i];
-	}
-	return lba;
-}
+void readseg(uchar*, uint, uint);
 
-__noreturn
+/**
+ * Analyze elf at 2nd partition, load prog segments into memory,
+ * clean bss and call its entry
+ **/
 void bootmain(void)
 {
-	elf_hdr *elf = (elf_hdr *)&elf_hdr_buf[0];
-	elf_phdr *ph, *eph;
-	uint32_t base = get_lba(2) * SECT_SIZE;
-	void (*entry)(void);
-	void *pa;
+    elfhdr *elf;
+    proghdr *ph, *eph;
+    void (*entry)(void);
+    uchar* pa;
 
-	readseg(&elf_hdr_buf, ELF_BUF_SIZE, base);
-	// magic check
-	if (!is_elf(elf)) goto fail;
+    mbr = (uint8_t *)(0x7c00 + 0x1ce);      // 2nd partition
+    uint32_t hd_offs = (*(uint32_t *)(mbr + P_SEC_OFFS)) * SECTSIZE; 
+                                            // calc disk offs
 
-	// Load each program segment
-	ph = (elf_phdr *)((void *)elf + elf->e_phoff);
-	eph = ph + elf->e_phnum;
-	for (; ph < eph; ph++){
-		/* load flag */
-		if (ph->p_type != PT_LOAD) continue;
-		pa = (void *)ph->p_paddr;
-		readseg(pa, ph->p_filesz, base + ph->p_offset);
-		if (ph->p_memsz > ph->p_filesz)
-		stosb(pa + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
-	}
+    elf = (elfhdr*)0x10000;                 // scratch space
 
-	// Call the entry point
-	entry = (void(*)(void))(elf->e_entry);
-	entry();
+    // Read at least all headers into buffer
+    readseg((uint8_t*)elf, SECTSIZE * 16, hd_offs);
 
-fail:
-	while (1);
+    // check MAGIC (using bit op to avoid pointer aliasing)
+    uint32_t magic = 0;
+    magic = elf->e_ident[3] << 24 | elf->e_ident[2] << 16 
+        | elf->e_ident[1] << 8 | elf->e_ident[0];
+    if(magic != ELF_MAGIC)
+        return;                             // bootasm.S will be in inf loop
+
+    // Load each prog seg (ignores ph flags).
+    ph = (proghdr*)((uchar*)elf + elf->e_phoff);
+    // End of prog hdr
+    eph = ph + elf->e_phnum;
+
+    for(; ph < eph; ph++){
+        // Assigned memory addr
+        pa = (uchar*)ph->p_paddr;
+        // Read seg from disk
+        readseg(pa, ph->p_filesz, ph->p_offset + hd_offs);
+        // Clean .bss
+        if(ph->p_memsz > ph->p_filesz)
+            stosb(pa + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
+    }
+
+    // Call the entry point from the ELF header.
+    // Does not return! (jmp)
+    entry = (void(*)(void))(elf->e_entry);
+    entry();
+}
+
+// the following codes are arch-free when out and in is properly replaced
+    void
+waitdisk(void)
+{
+    // Wait for disk ready.
+    while((inb(0x1F7) & 0xC0) != 0x40)
+        ;
+}
+
+// Read a single sector at offset into dst.
+    void
+readsect(void *dst, uint offset)
+{
+    // Issue command.
+    waitdisk();
+    outb(0x1F2, 1);   // count = 1
+    outb(0x1F3, offset);
+    outb(0x1F4, offset >> 8);
+    outb(0x1F5, offset >> 16);
+    outb(0x1F6, (offset >> 24) | 0xE0);
+    outb(0x1F7, 0x20);  // cmd 0x20 - read sectors
+
+    // Read data.
+    waitdisk();
+    insl(0x1F0, dst, SECTSIZE/4);
+}
+
+// Read 'count' bytes at 'offset' from kernel into physical address 'pa'.
+// Might copy more than asked.
+    void
+readseg(uchar* pa, uint count, uint offset)
+{
+    uchar* epa;
+
+    epa = pa + count;
+
+    // Round down to sector boundary.
+    pa -= offset % SECTSIZE;
+
+    // Translate from bytes to sectors; kernel starts at sector 1.
+    offset = (offset / SECTSIZE);
+
+    // If this is too slow, we could read lots of sectors at a time.
+    // We'd write more to memory than asked, but it doesn't matter --
+    // we load in increasing order.
+    for(; pa < epa; pa += SECTSIZE, offset++)
+        readsect(pa, offset);
 }
 

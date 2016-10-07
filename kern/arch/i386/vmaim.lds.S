@@ -27,20 +27,22 @@
  * linker script.
  */
 
-ENTRY(_start)
-
+ENTRY(master_early_entry)
 SECTIONS
 {
 	. = KERN_START;
 
-	.text : {
-		*(.text);
-	}
+	.text   : {*(.text);}
+	.data   : {*(.data);}
 
-	.data : {
-		*(.data);
-	}
+	.bss    : {
+        __bss_start_kern = .; 
+        *(.bss);
+        __bss_end_kern = .;
+    }
 
+	// TODO: the following is suggested
+/*
 	.bss : {
 		*(.bss);
 		. = ALIGN(4096);
@@ -48,5 +50,7 @@ SECTIONS
 		. += KSTACKSIZE;
 		PROVIDE(kstack_top = .);
 	}
+*/
+	.end = .;
 }
 

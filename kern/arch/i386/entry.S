@@ -22,18 +22,27 @@
 
 .text
 
-.globl _start
-_start:
-	/* same as bootloader */
-	cli
-	cld
-	/* Set up the stack pointer */
-	mov	$kstack_top, %esp
-	xor	%eax, %eax
-	push	%eax		// eip=0
-	push	%eax		// ebp=0
-	mov	%esp, %ebp
+.globl master_early_entry
 
-	/* and there we go */
-	call	master_early_init
+master_early_entry:
+    cli     // no interrupt
+    cld
 
+/* //TODO: these are updated in new repo
+mov	$kstack_top, %esp
+xor	%eax, %eax
+push	%eax		// eip=0
+push	%eax		// ebp=0
+mov	%esp, %ebp
+*/
+
+    call clear_bss_kern
+    
+    push %ebp
+    mov %esp, %ebp
+
+    call master_early_init
+
+    pop %ebp
+    ret
+     

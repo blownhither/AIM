@@ -23,13 +23,17 @@
 #include <sys/types.h>
 #include <aim/init.h>
 
-__noreturn
+void sleep1();  // from each arch
+
+// __noreturn
 void master_early_init(void)
 {
 	arch_early_init();
+
 	goto panic;
 
 panic:
-	while (1);
+    sleep1();
 }
+
 

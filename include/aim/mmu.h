@@ -46,13 +46,19 @@
 	(i >= KERN_BASE) ? (i) : __postmap_addr(i); \
 })
 
+//TODO: what to do?
 addr_t get_mem_physbase();
 addr_t get_mem_size();
 
+//TODO: what to do?
 void page_index_clear(pgindex_t *boot_page_index);
 int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 	void *vaddr, size_t size);
+	
+//Note: found in mmu.c
 int page_index_init(pgindex_t *boot_page_index);
+
+//TODO: what to do?
 void mmu_init(pgindex_t *boot_page_index);
 
 void early_mm_init(void);	/* arch-specific */
@@ -63,11 +69,11 @@ void arch_mm_init(void);	/* arch-specific */
 /* Clear all MMU init callback handlers */
 void mmu_handlers_clear(void);
 /* Add one MMU init callback handler, which will be called *after*
- * initializing MMU*/
+ * initializing MMU, found in mmu.c*/
 int mmu_handlers_add(generic_fp entry);
 void mmu_handlers_apply(void);
 
-/* Likewise */
+/* Likewise, found in jump.c*/
 void jump_handlers_clear(void);
 int jump_handlers_add(generic_fp entry);
 void jump_handlers_apply(void);

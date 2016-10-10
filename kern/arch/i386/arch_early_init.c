@@ -29,7 +29,7 @@ typedef uint16_t ushort;
 #include "aim/boot.h"
 
 
-
+// The following are one-shot usage func
 typedef struct segment_descriptor {
     uint64_t limit_12_27 :16;
     uint64_t base_0_15  :16;

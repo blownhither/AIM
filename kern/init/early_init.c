@@ -23,7 +23,6 @@
 #include <sys/types.h>
 #include <aim/init.h>
 
-void sleep1();  // from each arch
 
 // __noreturn
 void master_early_init(void)

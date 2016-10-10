@@ -27,9 +27,11 @@
  * linker script.
  */
 
+
 ENTRY(master_early_entry)
 SECTIONS
 {
+    // Note: config define KERN_START as 0x01000000
 	. = KERN_START;
 
 	.text   : {*(.text);}
@@ -39,8 +41,10 @@ SECTIONS
         __bss_start_kern = .; 
         *(.bss);
         . = ALIGN(4096);
-        PROVIDE(__kstack_base = .); // using provide to give glb var
+        PROVIDE(__kstack_base = .); 
+        // using PROVIDE to get glb var
         . += KSTACKSIZE;
+        // Note: config defines KSTACKSIZE as 32768(0x8000)
         PROVIDE(__kstack_top = .);
         __bss_end_kern = .;
     }

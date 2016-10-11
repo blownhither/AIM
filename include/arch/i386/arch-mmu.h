@@ -21,6 +21,8 @@
 
 #ifndef __ASSEMBLER__
 
+#define PHYSTOP 0xE000000   
+
 // same thing with four names
 typedef uint32_t	pde_t;
 typedef uint32_t	pte_t;

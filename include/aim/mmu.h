@@ -84,8 +84,7 @@ void jump_handlers_apply(void);
  * by jumping to some address, callers acknowledge that C runtime components
  * like stack are not preserved, and no return-like operation will be performed.
  */
-__noreturn
-void abs_jump(void *addr);
+__noreturn void abs_jump(void *addr);
 
 /*
  * Architecture-specific interfaces

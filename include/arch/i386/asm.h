@@ -1,5 +1,7 @@
 // assembler macros to create x86 segments
 //
+#ifndef _ARCH_ASM_H
+#define _ARCH_ASM_H
 
 #define SEG_NULLASM                                             \
         .word 0, 0;                                             \
@@ -19,3 +21,33 @@
 #define STA_R     0x2       // Readable (executable segments)
 #define STA_A     0x1       // Accessed 
 
+#ifndef __ASSEMBLER__
+
+static inline void
+cli(void)
+{
+  asm volatile("cli");
+}
+
+static inline void
+sti(void)
+{
+  asm volatile("sti");
+}
+
+static inline uint32_t
+xchg(volatile uint32_t *addr, uint32_t newval)
+{
+  uint32_t result;
+
+  // The + in "+m" denotes a read-modify-write operand.
+  asm volatile("lock; xchgl %0, %1" :
+               "+m" (*addr), "=a" (result) :
+               "1" (newval) :
+               "cc");
+  return result;
+}
+
+
+#endif
+#endif

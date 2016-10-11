@@ -32,12 +32,18 @@ ENTRY(master_early_entry)
 SECTIONS
 {
     // Note: config define KERN_START as 0x01000000
-	. = KERN_START;
+    // or KERN_BASE 0x80000000
+    // TODO: why 0x100000
+	. = KERN_BASE + 0x100000;
 
-	.text   : {*(.text);}
-	.data   : {*(.data);}
+	.text   : AT(0x100000) {*(.text);}
+	.data   : 
+	    AT(LOADADDR(.text) + SIZEOF(.text)) 
+	    {*(.data);}
 
-	.bss    : {
+	.bss    : 
+	    AT(LOADADDR(.data) + SIZEOF(.data))
+	{
         __bss_start_kern = .; 
         *(.bss);
         . = ALIGN(4096);
@@ -48,6 +54,10 @@ SECTIONS
         PROVIDE(__kstack_top = .);
         __bss_end_kern = .;
     }
+
+    .rodata :
+        AT(LOADADDR(.bss) + SIZEOF(.bss)) 
+        {*(.rodata);}
 
 	// TODO: the following is suggested
 /*
@@ -60,5 +70,7 @@ SECTIONS
 	}
 */
 	.end = .;
+	PROVIDE(__end = .);
+	
 }
 

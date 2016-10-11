@@ -20,14 +20,15 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <sys/types.h>
+#include "sys/types.h"
 typedef uint8_t uchar;
 typedef uint32_t uint;
 typedef uint16_t ushort;
 
-#include <aim/init.h>
+#include "aim/init.h"
 #include "aim/boot.h"
-
+#include "aim/mmu.h"
+#include "aim/kalloc.h"
 
 // The following are one-shot usage func
 typedef struct segment_descriptor {

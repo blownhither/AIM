@@ -10,7 +10,7 @@
 void freerange(void *vstart, void *vend);
 void kfree(addr_t *v);
 // lds defines addr_t *__end;
-extern addr_t* __end;
+
 
 struct run {
   struct run *next;

@@ -46,6 +46,8 @@
 	(i >= KERN_BASE) ? (i) : __postmap_addr(i); \
 })
 
+extern addr_t* __end;
+
 //TODO: what to do?
 addr_t get_mem_physbase();
 addr_t get_mem_size();

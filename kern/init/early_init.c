@@ -20,14 +20,18 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <sys/types.h>
-#include <aim/init.h>
-
+#include "sys/types.h"
+#include "aim/init.h"
+#include "aim/kalloc.h"
+#include "aim/mmu.h"
 
 // __noreturn
 void master_early_init(void)
 {
 	arch_early_init();
+
+    
+    kinit1(__end, (addr_t *)postmap_addr(4<<20));
 
 	goto panic;
 

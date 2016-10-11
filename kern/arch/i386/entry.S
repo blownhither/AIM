@@ -36,7 +36,7 @@ push	%eax		// ebp=0
 mov	%esp, %ebp
 */
 
-    mov	$__kstack_top, %esp
+    mov	$__kstack_top - KERN_BASE, %esp
     xor	%eax, %eax
     push	%eax		// eip=0
     push	%eax		// ebp=0

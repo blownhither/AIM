@@ -38,11 +38,15 @@ SECTIONS
 
 	.text   : AT(0x100000) {*(.text);}
 	.data   : 
-	    AT(LOADADDR(.text) + SIZEOF(.text)) 
+	    // AT(LOADADDR(.text) + SIZEOF(.text)) 
 	    {*(.data);}
 
+    .rodata :
+        // AT(LOADADDR(.bss) + SIZEOF(.bss)) 
+        {*(.rodata);}
+
 	.bss    : 
-	    AT(LOADADDR(.data) + SIZEOF(.data))
+	    // AT(LOADADDR(.data) + SIZEOF(.data))
 	{
         __bss_start_kern = .; 
         *(.bss);
@@ -55,9 +59,7 @@ SECTIONS
         __bss_end_kern = .;
     }
 
-    .rodata :
-        AT(LOADADDR(.bss) + SIZEOF(.bss)) 
-        {*(.rodata);}
+    
 
 	// TODO: the following is suggested
 /*

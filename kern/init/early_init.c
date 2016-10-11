@@ -25,13 +25,10 @@
 #include "aim/kalloc.h"
 #include "aim/mmu.h"
 
-// __noreturn
+//__noreturn 
 void master_early_init(void)
 {
 	arch_early_init();
-
-    
-    kinit1(__end, (addr_t *)postmap_addr(4<<20));
 
 	goto panic;
 

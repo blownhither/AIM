@@ -46,7 +46,7 @@
 
 int page_index_init(pgindex_t *boot_page_index)
 {
-	struct early_mapping *mapping = early_mapping_next(NULL);
+	struct early_mapping *mapping = early_mapping_next(NULL);   // get first
 	int ret;
 
 	page_index_clear(boot_page_index);

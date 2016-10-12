@@ -31,7 +31,7 @@ typedef uint16_t ushort;
 #include "aim/kalloc.h"
 
 // The following are one-shot usage func
-typedef struct segment_descriptor {
+/*typedef struct segment_descriptor {
     uint64_t limit_12_27 :16;
     uint64_t base_0_15  :16;
     uint64_t base_16_23 :8;
@@ -51,15 +51,18 @@ static inline void seg_desc_fill(
     d->limit_28_32  = 0xc0 | ((limit >> 28) & 0xf);
     d->base_24_32   = (base >> 24) & 0xff;
 }
+*/
 
-#define SEG_DESC_COUNT 3
-static seg_desc_t kern_gdt[3];
+static struct segdesc kern_gdt[NSEGS];
 
 static void arch_load_gdt() {
-    // fill 3 entries in gdt
-    seg_desc_fill(&kern_gdt[0], 0, 0, 0);
-    seg_desc_fill(&kern_gdt[1], STA_X|STA_R, 0, 0xffffffff);
-    seg_desc_fill(&kern_gdt[2], STA_W, 0, 0xffffffff);
+    
+    kern_gdt[0] = SEG(0,0,0,0);
+    kern_gdt[SEG_KCODE] = SEG(STA_X|STA_R, 0, 0xffffffff, 0);
+    kern_gdt[SEG_KDATA] = SEG(STA_W, 0, 0xffffffff, 0);
+    kern_gdt[SEG_UCODE] = SEG(STA_X|STA_R, 0, 0xffffffff, DPL_USER);
+    kern_gdt[SEG_UDATA] = SEG(STA_W, 0, 0xffffffff, DPL_USER);
+    //TODO: kern_gdt[SEG_KCPU] = SEG(STA_W, &c->cpu, 8, 0);
     
     // lgdt a memory address
     __asm__ __volatile__ ("lgdt %0":"=m"(kern_gdt));

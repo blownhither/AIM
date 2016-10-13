@@ -28,7 +28,7 @@
  */
 
 
-ENTRY(master_early_entry)
+ENTRY(kern_entry)
 SECTIONS
 {
     // Note: config define KERN_START as 0x01000000

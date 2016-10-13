@@ -9,6 +9,25 @@
 
 addr_t* kalloc(void);
 
+void page_index_clear(pgindex_t *boot_page_index) {
+    // TODO: implement
+}
+int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
+	void *vaddr, size_t size) {
+    
+    vaddr_t *va = (vaddr_t *)PGROUNDDOWN((uint32_t)vaddr);
+    vaddr_t *end = (vaddr_t *)(PGROUNDDOWN((uint32_t)vaddr) + size - 1);
+    pte_t *pte;
+    for(; va <= end; va += PGSIZE) {
+        pte = (pte_t *)&boot_page_index[PDX(vaddr)];
+        *pte = (uint32_t)(paddr | PTE_P);    //TODO: flags?
+        paddr += PGSIZE;
+        
+    }
+    return end - va + PGSIZE;
+}
+
+
 // Get or alloc a page table in given pagedir 
 static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
     pde_t *pde = (pde_t *)&pgindex[PDX(vaddr)];

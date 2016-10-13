@@ -88,7 +88,7 @@ void bootmain(void)
 
     // Call the entry point from the ELF header.
     // Does not return! (jmp)
-    entry = (void(*)(void))(elf->e_entry) - KERN_BASE;
+    entry = (void(*)(void))(elf->e_entry);
     entry();
 }
 

@@ -44,6 +44,7 @@
  * initialize the page allocator and the kmmap subsystem.
  */
 
+
 int page_index_init(pgindex_t *boot_page_index)
 {
 	struct early_mapping *mapping = early_mapping_next(NULL);   // get first

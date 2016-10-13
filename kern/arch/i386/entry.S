@@ -24,6 +24,9 @@
 
 .globl master_early_entry
 
+.globl kern_entry
+kern_entry = master_early_entry - KERN_BASE
+
 master_early_entry:
     cli     // no interrupt
     cld

@@ -21,9 +21,9 @@
 #endif /* HAVE_CONFIG_H */
 
 #include "sys/types.h"
-typedef uint8_t uchar;
-typedef uint32_t uint;
-typedef uint16_t ushort;
+//typedef uint8_t uchar;
+//typedef uint32_t uint;
+//typedef uint16_t ushort;
 
 #include "aim/init.h"
 #include "aim/boot.h"
@@ -67,6 +67,8 @@ static void arch_load_gdt() {
     // lgdt a memory address
     __asm__ __volatile__ ("lgdt %0":"=m"(kern_gdt));
 }
+
+pgindex_t *entrypgdir = NULL;
 
 void arch_early_init(void)
 {

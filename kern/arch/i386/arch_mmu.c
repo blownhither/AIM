@@ -12,6 +12,7 @@ addr_t* kalloc(void);
 void page_index_clear(pgindex_t *boot_page_index) {
     // TODO: implement
 }
+
 int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 	void *vaddr, size_t size) {
     

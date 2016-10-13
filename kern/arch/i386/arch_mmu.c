@@ -17,10 +17,10 @@ int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 	void *vaddr, size_t size) {
     
     vaddr_t *va = (vaddr_t *)PGROUNDDOWN((uint32_t)vaddr);
-    vaddr_t *end = (vaddr_t *)(PGROUNDDOWN((uint32_t)vaddr) + size - 1);
+    vaddr_t *end = (vaddr_t *)(PGROUNDDOWN((uint32_t)vaddr + size - 1));
     pte_t *pte;
     for(; va <= end; va += PGSIZE) {
-        pte = (pte_t *)&boot_page_index[PDX(vaddr)];
+        pte = (pte_t *)&boot_page_index[PDX(va)];
         *pte = (uint32_t)(paddr | PTE_P);    //TODO: flags?
         paddr += PGSIZE;
         
@@ -31,6 +31,7 @@ int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 
 // Get or alloc a page table in given pagedir 
 static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
+    /*
     pde_t *pde = (pde_t *)&pgindex[PDX(vaddr)];
     pte_t *pt;
     
@@ -43,7 +44,7 @@ static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
         *pde = premap_addr(pt) | PTE_P | PTE_W | PTE_U;
     }
     return &pt[PTX(vaddr)];
-    
+    */
     
 }
 

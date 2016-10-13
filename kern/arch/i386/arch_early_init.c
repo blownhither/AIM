@@ -21,9 +21,6 @@
 #endif /* HAVE_CONFIG_H */
 
 #include "sys/types.h"
-//typedef uint8_t uchar;
-//typedef uint32_t uint;
-//typedef uint16_t ushort;
 
 #include "aim/init.h"
 #include "aim/boot.h"
@@ -53,6 +50,16 @@ static inline void seg_desc_fill(
 }
 */
 
+
+extern uint32_t __bss_start_kern, __bss_end_kern;
+
+void clear_bss_kern(){
+    if (&__bss_end_kern > &__bss_start_kern)
+        stosb(&__bss_start_kern, 0, 
+            &__bss_end_kern - &__bss_start_kern);
+
+}
+
 static struct segdesc kern_gdt[NSEGS];
 
 static void arch_load_gdt() {
@@ -68,24 +75,46 @@ static void arch_load_gdt() {
     __asm__ __volatile__ ("lgdt %0":"=m"(kern_gdt));
 }
 
-pgindex_t *entrypgdir = NULL;
+// pgindex_t entrypgdir[NPDENTRIES];
+
+__attribute__((__aligned__(PGSIZE)))
+pde_t entrypgdir[NPDENTRIES] = {
+  // Map VA's [0, 4MB) to PA's [0, 4MB)
+  [0] = (0) | PTE_P | PTE_W | PTE_PS,
+  // [1] = (1<<22) | PTE_P | PTE_W | PTE_PS,
+  // Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
+  [0x200] = (0) | PTE_P | PTE_W | PTE_PS,
+  
+};
+
 void set_control_registers();
 
 void arch_early_init(void)
 {
     arch_load_gdt();    // get a new gdt other than bootloader one
     
+    // TODO: check linear page mapping
+    /*
+    page_index_early_map(
+        (pgindex_t *)premap_addr(entrypgdir), 
+        (addr_t)0, 
+        (void *)KERN_BASE, 
+        200<<20
+    );
+    page_index_early_map(
+        (pgindex_t *)premap_addr(entrypgdir), 
+        (addr_t)0,
+        (void *)0,
+        200<<20  
+    );
+    */
+    //pgindex_t*, paddr, vaddr, size
     set_control_registers();    // also jmp to new target
     
 }
 
-extern uint32_t __bss_start_kern, __bss_end_kern;
-
-void clear_bss_kern(){
-    if (&__bss_end_kern > &__bss_start_kern)
-        stosb(&__bss_start_kern, 0, 
-            &__bss_end_kern - &__bss_start_kern);
-
+void inf_loop() {
+    while(1);
 }
 
 void sleep1(){

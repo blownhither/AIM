@@ -63,22 +63,24 @@ set_control_registers:
     // Set page directory
     movl    $entrypgdir-KERN_BASE, %eax
     movl    %eax, %cr3
+
     // Turn on paging.
     movl    %cr0, %eax
     orl     $(CR0_PG|CR0_WP), %eax
     movl    %eax, %cr0
 
     // Set up the stack pointer.
-    movl    $__kstack_top, %esp    //TODO: check
+    // movl    $__kstack_top, %esp    //TODO: check
+    add     $KERN_BASE, %esp
     //TODO: need?
-    xor	    %eax, %eax
-    push	%eax		// eip=0
-    push	%eax		// ebp=0
+    // xor	    %eax, %eax
+    // push	%eax		// eip=0
+    // push	%eax		// ebp=0
     
     // Jump to main(), and switch to executing at
     // high addresses. The indirect call is needed because
     // the assembler produces a PC-relative instruction
     // for a direct jump.
-    mov $sleep1, %eax
+    mov $inf_loop, %eax
     jmp *%eax
      

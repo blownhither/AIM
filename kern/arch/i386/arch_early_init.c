@@ -69,12 +69,13 @@ static void arch_load_gdt() {
 }
 
 pgindex_t *entrypgdir = NULL;
+void set_control_registers();
 
 void arch_early_init(void)
 {
     arch_load_gdt();    // get a new gdt other than bootloader one
     
-    
+    set_control_registers();    // also jmp to new target
     
 }
 

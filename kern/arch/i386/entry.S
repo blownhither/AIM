@@ -61,8 +61,7 @@ set_control_registers:
     orl     $(CR4_PSE), %eax
     movl    %eax, %cr4
     // Set page directory
-    movl    $entrypgdir, %eax
-    sub     $KERN_BASE, %eax    //TODO: check
+    movl    $entrypgdir-KERN_BASE, %eax
     movl    %eax, %cr3
     // Turn on paging.
     movl    %cr0, %eax
@@ -70,9 +69,9 @@ set_control_registers:
     movl    %eax, %cr0
 
     // Set up the stack pointer.
-    movl $__kstack_top, %esp    //TODO: check
+    movl    $__kstack_top, %esp    //TODO: check
     //TODO: need?
-    xor	%eax, %eax
+    xor	    %eax, %eax
     push	%eax		// eip=0
     push	%eax		// ebp=0
     

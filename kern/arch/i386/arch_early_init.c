@@ -27,30 +27,6 @@
 #include "aim/mmu.h"
 #include "aim/kalloc.h"
 
-// The following are one-shot usage func
-/*typedef struct segment_descriptor {
-    uint64_t limit_12_27 :16;
-    uint64_t base_0_15  :16;
-    uint64_t base_16_23 :8;
-    uint64_t type       :8;
-    uint64_t limit_28_32:8;
-    uint64_t base_24_32 :8;
-} seg_desc_t;
-
-static inline void seg_desc_fill(
-        seg_desc_t *d, uint8_t type, uint32_t base, uint32_t limit
-    ) 
-{
-    d->limit_12_27  = (limit >> 0x12) & 0xffff;
-    d->base_0_15    = base & 0xffff;
-    d->base_16_23   = (base >> 16) & 0xff;
-    d->type         = 0x90 | (type & 0xff);
-    d->limit_28_32  = 0xc0 | ((limit >> 28) & 0xf);
-    d->base_24_32   = (base >> 24) & 0xff;
-}
-*/
-
-
 extern uint32_t __bss_start_kern, __bss_end_kern;
 
 void clear_bss_kern(){
@@ -75,15 +51,13 @@ static void arch_load_gdt() {
     __asm__ __volatile__ ("lgdt %0":"=m"(kern_gdt));
 }
 
-// pgindex_t entrypgdir[NPDENTRIES];
-
 __attribute__((__aligned__(PGSIZE)))
 pde_t entrypgdir[NPDENTRIES] = {
   // Map VA's [0, 4MB) to PA's [0, 4MB)
   [0] = (0) | PTE_P | PTE_W | PTE_PS,
-  // [1] = (1<<22) | PTE_P | PTE_W | PTE_PS,
+
   // Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
-  [0x200] = (0) | PTE_P | PTE_W | PTE_PS,
+  [PDX(KERN_BASE)] = (0) | PTE_P | PTE_W | PTE_PS,
   
 };
 
@@ -93,22 +67,6 @@ void arch_early_init(void)
 {
     arch_load_gdt();    // get a new gdt other than bootloader one
     
-    // TODO: check linear page mapping
-    /*
-    page_index_early_map(
-        (pgindex_t *)premap_addr(entrypgdir), 
-        (addr_t)0, 
-        (void *)KERN_BASE, 
-        200<<20
-    );
-    page_index_early_map(
-        (pgindex_t *)premap_addr(entrypgdir), 
-        (addr_t)0,
-        (void *)0,
-        200<<20  
-    );
-    */
-    //pgindex_t*, paddr, vaddr, size
     set_control_registers();    // also jmp to new target
     
 }

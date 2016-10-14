@@ -67,7 +67,8 @@ void arch_early_init(void)
 {
     arch_load_gdt();    // get a new gdt other than bootloader one
     
-    set_control_registers();    // also jmp to new target
+    
+    
     
 }
 

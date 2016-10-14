@@ -4,24 +4,15 @@
 
 #ifndef __ASSEMBLER__
 
-void
-kinit1(void *vstart, void *vend)
-;
+void kinit1(void *vstart, void *vend);
 
-void
-kinit2(void *vstart, void *vend)
-;
-void
-freerange(void *vstart, void *vend)
-;
+void kinit2(void *vstart, void *vend);
 
-void
-kfree(addr_t *v)
-;
+void freerange(void *vstart, void *vend);
 
-addr_t*
-kalloc(void)
-;
+void kfree(addr_t *v);
+
+addr_t* kalloc(void);
 
 #endif
 #endif

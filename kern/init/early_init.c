@@ -25,10 +25,16 @@
 #include "aim/kalloc.h"
 #include "aim/mmu.h"
 
+uint32_t __kstack_base, __kstack_top;
+
 //__noreturn 
 void master_early_init(void)
 {
 	arch_early_init();
+    kinit1((void *)&__kstack_base, (void *)&__kstack_top);
+    
+    set_control_registers();    // also jmp to new target
+
 
 	goto panic;
 

@@ -31,7 +31,7 @@ int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 
 // Get or alloc a page table in given pagedir 
 static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
-    /*
+    
     pde_t *pde = (pde_t *)&pgindex[PDX(vaddr)];
     pte_t *pt;
     
@@ -44,7 +44,7 @@ static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
         *pde = premap_addr(pt) | PTE_P | PTE_W | PTE_U;
     }
     return &pt[PTX(vaddr)];
-    */
+    
     
 }
 

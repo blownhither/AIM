@@ -70,14 +70,14 @@ set_control_registers:
     movl    %eax, %cr0
 
     // Set up the stack pointer.
-    // movl    $__kstack_top, %esp    //TODO: check
+    // movl    $__kstack_top, %esp
     add     $KERN_BASE, %esp
 
     xor	    %eax, %eax
     push	%eax		// eip=0
     push	%eax		// ebp=0
     
-    // Jump to main(), and switch to executing at
+    // Jump and switch to executing at
     // high addresses. The indirect call is needed because
     // the assembler produces a PC-relative instruction
     // for a direct jump.

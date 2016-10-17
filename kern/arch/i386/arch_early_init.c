@@ -72,9 +72,6 @@ void arch_early_init(void)
     
 }
 
-void inf_loop() {
-    while(1);
-}
 
 void sleep1(){
     /*  // nice try... but int80 is not yet implemented

@@ -25,13 +25,14 @@
 #include "aim/kalloc.h"
 #include "aim/mmu.h"
 
-uint32_t __kstack_base, __kstack_top;
 
-//__noreturn 
+void set_control_registers();
+
+__noreturn 
 void master_early_init(void)
 {
 	arch_early_init();
-    kinit1((void *)&__kstack_base, (void *)&__kstack_top);
+    
     
     set_control_registers();    // also jmp to new target
 
@@ -40,7 +41,20 @@ void master_early_init(void)
 
 panic:
     sleep1();
+    while(1);   // to suppress __noreturn warning, never here
     
 }
+
+
+void inf_loop() {
+    while(1);
+}
+
+void continue_early_init(void) {
+    kinit1((void *)__end, (void *)postmap_addr(4*1024*1024));
+    inf_loop();
+}
+
+
 
 

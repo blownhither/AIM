@@ -23,6 +23,140 @@
 
 #ifndef __ASSEMBLER__
 
+#include "sys/types.h"
+#include "aim/panic.h"
+
+static inline uchar
+inb(ushort port)
+{
+  uchar data;
+
+  asm volatile("in %1,%0" : "=a" (data) : "d" (port));
+  return data;
+}
+
+
+
+static inline
+uint16_t inw(uint16_t port)
+{
+	//TODO:
+	panic("inw");
+	return 0;
+}
+
+static inline
+uint32_t inl(uint16_t port)
+{
+	//TODO:
+	panic("inl");
+	return 0;
+}
+
+static inline void
+insl(int port, void *addr, int cnt)
+{
+  asm volatile("cld; rep insl" :
+               "=D" (addr), "=c" (cnt) :
+               "d" (port), "0" (addr), "1" (cnt) :
+               "memory", "cc");
+}
+
+
+static inline void
+outb(ushort port, uchar data)
+{
+  asm volatile("out %0,%1" : : "a" (data), "d" (port));
+}
+
+static inline void
+outw(ushort port, ushort data)
+{
+  asm volatile("out %0,%1" : : "a" (data), "d" (port));
+}
+
+static inline
+void outl(uint16_t port, uint8_t data)
+{
+    panic("outl");
+    //TODO:
+}
+
+static inline void
+outsl(int port, const void *addr, int cnt)
+{
+  asm volatile("cld; rep outsl" :
+               "=S" (addr), "=c" (cnt) :
+               "d" (port), "0" (addr), "1" (cnt) :
+               "cc");
+}
+
+static inline void
+stosb(void *addr, int data, int cnt)
+{
+  asm volatile("cld; rep stosb" :
+               "=D" (addr), "=c" (cnt) :
+               "0" (addr), "1" (cnt), "a" (data) :
+               "memory", "cc");
+}
+
+static inline void
+stosl(void *addr, int data, int cnt)
+{
+  asm volatile("cld; rep stosl" :
+               "=D" (addr), "=c" (cnt) :
+               "0" (addr), "1" (cnt), "a" (data) :
+               "memory", "cc");
+}
+
+struct segdesc;
+
+static inline void
+lgdt(struct segdesc *p, int size)
+{
+  volatile ushort pd[3];
+
+  pd[0] = size-1;
+  pd[1] = (uint)p;
+  pd[2] = (uint)p >> 16;
+
+  asm volatile("lgdt (%0)" : : "r" (pd));
+}
+
+struct gatedesc;
+
+static inline void
+lidt(struct gatedesc *p, int size)
+{
+  volatile ushort pd[3];
+
+  pd[0] = size-1;
+  pd[1] = (uint)p;
+  pd[2] = (uint)p >> 16;
+
+  asm volatile("lidt (%0)" : : "r" (pd));
+}
+
+static inline void
+ltr(ushort sel)
+{
+  asm volatile("ltr %0" : : "r" (sel));
+}
+
+static inline uint
+readeflags(void)
+{
+  uint eflags;
+  asm volatile("pushfl; popl %0" : "=r" (eflags));
+  return eflags;
+}
+
+static inline void
+loadgs(ushort v)
+{
+  asm volatile("movw %0, %%gs" : : "r" (v));
+}
+
 static inline void
 cli(void)
 {
@@ -35,10 +169,10 @@ sti(void)
   asm volatile("sti");
 }
 
-static inline uint32_t
-xchg(volatile uint32_t *addr, uint32_t newval)
+static inline uint
+xchg(volatile uint *addr, uint newval)
 {
-  uint32_t result;
+  uint result;
 
   // The + in "+m" denotes a read-modify-write operand.
   asm volatile("lock; xchgl %0, %1" :
@@ -48,61 +182,57 @@ xchg(volatile uint32_t *addr, uint32_t newval)
   return result;
 }
 
-/* Copyright (C) 2016 David Gao <davidgao1001@gmail.com>
- *
- * This file is part of AIM.
- *
- * AIM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * AIM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-//TODO: merge remain
-
-static inline
-uint8_t inb(uint16_t port)
+static inline uint
+rcr2(void)
 {
-	return 0;
+  uint val;
+  asm volatile("movl %%cr2,%0" : "=r" (val));
+  return val;
 }
 
-static inline
-uint16_t inw(uint16_t port)
+static inline void
+lcr3(uint val)
 {
-	return 0;
+  asm volatile("movl %0,%%cr3" : : "r" (val));
 }
 
-static inline
-uint32_t inl(uint16_t port)
-{
-	return 0;
-}
+//PAGEBREAK: 36
+// Layout of the trap frame built on the stack by the
+// hardware and by trapasm.S, and passed to trap().
+struct trapframe {
+  // registers as pushed by pusha
+  uint edi;
+  uint esi;
+  uint ebp;
+  uint oesp;      // useless & ignored
+  uint ebx;
+  uint edx;
+  uint ecx;
+  uint eax;
 
-static inline
-void outb(uint16_t port, uint8_t data)
-{
-}
+  // rest of trap frame
+  ushort gs;
+  ushort padding1;
+  ushort fs;
+  ushort padding2;
+  ushort es;
+  ushort padding3;
+  ushort ds;
+  ushort padding4;
+  uint trapno;
 
-static inline
-void outw(uint16_t port, uint8_t data)
-{
-}
+  // below here defined by x86 hardware
+  uint err;
+  uint eip;
+  ushort cs;
+  ushort padding5;
+  uint eflags;
 
-static inline
-void outl(uint16_t port, uint8_t data)
-{
-}
-
-
-
+  // below here only when crossing rings, such as from user to kernel
+  uint esp;
+  ushort ss;
+  ushort padding6;
+};
 
 #endif
 #endif

@@ -6,6 +6,7 @@
 #include "aim/mmu.h"
 #include "aim/spinlock.h"
 #include "aim/panic.h"
+#include <libc/string.h>
 
 void freerange(void *vstart, void *vend);
 void kfree(addr_t *v);

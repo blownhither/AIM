@@ -48,11 +48,14 @@ typedef union page_directory_entry {
     pgindex_t val;
 } pgdir_ent_t;
 
+/*
 #include "arch-boot.h"
 static inline void *memset (void *addr, int data, size_t len) {
     stosb(addr, data, len);
     return addr;
 }
+*/
+
 // This file contains definitions for the
 // x86 memory management unit (MMU).
 

@@ -20,26 +20,10 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-/*
- * Using the C preprocessor, we allow includes and macro expansion in this
- * linker script.
- */
+#include <sys/types.h>
+#include <aim/mmu.h>
 
-ENTRY(bootasm)
-SECTIONS
+void mmu_init(pgindex_t *boot_page_index)
 {
-    . = 0x7c00;
-    .text : { 
-        *bootasm.o(.text)
-        *(.text);
-    }
-    .data : { *(.data) ;}
-    
-    .bss : { 
-        __bss_start_boot = .;
-        *(.bss) ;
-        __bss_end_boot = .;
-    }
-    
-    .end = .;
 }
+

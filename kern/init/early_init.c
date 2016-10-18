@@ -21,22 +21,29 @@
 #endif /* HAVE_CONFIG_H */
 
 #include "sys/types.h"
+#include "aim/early_kmmap.h"
 #include "aim/init.h"
 #include "aim/kalloc.h"
 #include "aim/mmu.h"
 
 
-void set_cr_mmu();
 
-__noreturn 
+__noreturn
 void master_early_init(void)
 {
 	arch_early_init();
-    set_cr_mmu();    // also jmp to new target
+	set_cr_mmu();    // also jmp to new target
     
-
 	goto panic;
 
+
+/* TODO: merge remain
+	early_mapping_clear();
+	mmu_handlers_clear();
+	arch_early_init();
+
+	goto panic;
+*/
 panic:
     sleep1();
     while(1);   // to suppress __noreturn warning, never here

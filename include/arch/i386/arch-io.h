@@ -16,30 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif /* HAVE_CONFIG_H */
+#ifndef _ARCH_IO_H
+#define _ARCH_IO_H
+
+#ifndef __ASSEMBLER__
 
 /*
- * Using the C preprocessor, we allow includes and macro expansion in this
- * linker script.
+ * We use macros here so that, when involved in lab assignments, students
+ * do not have to implement them all to compile the whole project.
+ * In this way, only invoked routines need to be implemented.
  */
 
-ENTRY(bootasm)
-SECTIONS
-{
-    . = 0x7c00;
-    .text : { 
-        *bootasm.o(.text)
-        *(.text);
-    }
-    .data : { *(.data) ;}
-    
-    .bss : { 
-        __bss_start_boot = .;
-        *(.bss) ;
-        __bss_end_boot = .;
-    }
-    
-    .end = .;
-}
+#define in8(port)	inb(port)
+#define in16(port)	inw(port)
+#define in32(port)	inl(port)
+
+#define out8(port, data)	outb(port, data)
+#define out16(port, data)	outw(port, data)
+#define out32(port, data)	outl(port, data)
+
+#endif /* !__ASSEMBLER__ */
+
+#endif /* _ARCH_IO_H */
+

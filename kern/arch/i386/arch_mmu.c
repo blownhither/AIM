@@ -6,6 +6,7 @@
 #include <aim/early_kmmap.h>
 #include <aim/mmu.h>
 #include <aim/panic.h>
+#include <libc/string.h>
 
 addr_t* kalloc(void);
 
@@ -58,6 +59,18 @@ void early_mm_init(void) {
 }
 
 /***************************************************************/
+// TODO: merge remain
+bool early_mapping_valid(struct early_mapping *entry)
+{
+	return true;
+}
+
+void mmu_init(pgindex_t *boot_page_index)
+{
+}
+
+/***********************************/
+
 // Get or alloc a page table in given pagedir 
 static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
     

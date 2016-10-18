@@ -16,30 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif /* HAVE_CONFIG_H */
+#ifndef _ARCH_IO_H
+#define _ARCH_IO_H
 
-/*
- * Using the C preprocessor, we allow includes and macro expansion in this
- * linker script.
- */
+#ifndef __ASSEMBLER__
 
-ENTRY(bootasm)
-SECTIONS
-{
-    . = 0x7c00;
-    .text : { 
-        *bootasm.o(.text)
-        *(.text);
-    }
-    .data : { *(.data) ;}
-    
-    .bss : { 
-        __bss_start_boot = .;
-        *(.bss) ;
-        __bss_end_boot = .;
-    }
-    
-    .end = .;
-}
+#endif /* !__ASSEMBLER__ */
+
+#endif /* _ARCH_IO_H */
+

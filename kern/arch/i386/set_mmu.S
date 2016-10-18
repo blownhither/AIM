@@ -11,6 +11,12 @@
 
 .globl set_cr_mmu
 set_cr_mmu:
+    
+    // Set up the stack pointer.
+    xor	    %eax, %eax
+    push	%eax		// eip=0
+    push	%eax		// ebp=0
+
     // Turn on page size extension for 4Mbyte pages
     movl    %cr4, %eax
     orl     $(CR4_PSE), %eax
@@ -24,13 +30,8 @@ set_cr_mmu:
     orl     $(CR0_PG|CR0_WP), %eax
     movl    %eax, %cr0
 
-    // Set up the stack pointer.
-    // movl    $__kstack_top, %esp
+    // move esp pointer
     add     $KERN_BASE, %esp
-
-    xor	    %eax, %eax
-    push	%eax		// eip=0
-    push	%eax		// ebp=0
     
     // Jump and switch to executing at
     // high addresses. The indirect call is needed because

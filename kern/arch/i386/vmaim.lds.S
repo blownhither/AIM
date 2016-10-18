@@ -33,10 +33,13 @@ SECTIONS
 {
     // Note: config define KERN_START as 0x01000000
     // or KERN_BASE 0x80000000
-    // TODO: why 0x100000
-	. = KERN_BASE + 0x100000;
 
+	. = KERN_BASE + 0x100000;
+    __text_start_kern = .;
 	.text   : AT(0x100000) {*(.text);}
+	__text_end_kern = .;
+	
+	// . = ALIGN(1024 * 1024 * 4); // ensure seperate pages even in 4M paging
 	.data   : 
 	    // AT(LOADADDR(.text) + SIZEOF(.text)) 
 	    {*(.data);}

@@ -26,16 +26,14 @@
 #include "aim/mmu.h"
 
 
-void set_control_registers();
+void set_cr_mmu();
 
 __noreturn 
 void master_early_init(void)
 {
 	arch_early_init();
+    set_cr_mmu();    // also jmp to new target
     
-    
-    set_control_registers();    // also jmp to new target
-
 
 	goto panic;
 
@@ -51,7 +49,8 @@ void inf_loop() {
 }
 
 void continue_early_init(void) {
-    kinit1((void *)__end, (void *)postmap_addr(4*1024*1024));
+    early_mm_init();
+    
     inf_loop();
 }
 

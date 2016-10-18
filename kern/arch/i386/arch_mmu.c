@@ -9,26 +9,37 @@
 
 addr_t* kalloc(void);
 
+// Clear low-addr mapping to disable user space while kernel is high
 void page_index_clear(pgindex_t *boot_page_index) {
-    // TODO: implement
+    //TODO: write invalid pagedir to?
+    uint32_t n = KERN_BASE / (4<<20);   // 4M page 
+    memset(entrypgdir, 0, n << 2);   
 }
 
+// Map 4M pages with specified paddr and vaddr
 int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 	void *vaddr, size_t size) {
     
-    vaddr_t *va = (vaddr_t *)PGROUNDDOWN((uint32_t)vaddr);
-    vaddr_t *end = (vaddr_t *)(PGROUNDDOWN((uint32_t)vaddr + size - 1));
+    vaddr_t *va = (vaddr_t *)vaddr;
+    vaddr_t *end = (vaddr_t *)(vaddr + size);
     pte_t *pte;
-    for(; va <= end; va += PGSIZE) {
+    for(; va < end; va += PGSIZE) {
         pte = (pte_t *)&boot_page_index[PDX(va)];
-        *pte = (uint32_t)(paddr | PTE_P);    //TODO: flags?
+        *pte = (uint32_t)(paddr | PTE_P | PTE_W | PTE_PS);
         paddr += PGSIZE;
-        
     }
-    return end - va + PGSIZE;
+    return end - va;
 }
 
+// Set up linear mapping for early mapping
+void early_mm_init(void) {
+    // user space usage not allowed, only kernel is mapped
+    page_index_early_map(entrypgdir, (addr_t)0, (void *)KERN_BASE, PHYSTOP - 0);
+    // destroy low addr (user space)
+    page_index_clear(entrypgdir);
+}
 
+/***************************************************************/
 // Get or alloc a page table in given pagedir 
 static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
     

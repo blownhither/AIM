@@ -61,7 +61,7 @@ pde_t entrypgdir[NPDENTRIES] = {
   
 };
 
-void set_control_registers();
+void set_cr_mmu();
 
 void arch_early_init(void)
 {

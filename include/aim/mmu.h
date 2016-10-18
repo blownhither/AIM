@@ -47,6 +47,7 @@
 })
 
 extern addr_t* __end;
+extern pde_t entrypgdir[];
 
 //TODO: what to do?
 addr_t get_mem_physbase();

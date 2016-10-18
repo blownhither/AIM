@@ -9,8 +9,8 @@
 #include "aim/mmu.h"
 #include "cr.h"
 
-.globl set_control_registers
-set_control_registers:
+.globl set_cr_mmu
+set_cr_mmu:
     // Turn on page size extension for 4Mbyte pages
     movl    %cr4, %eax
     orl     $(CR4_PSE), %eax

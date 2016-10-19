@@ -46,7 +46,8 @@ void early_mm_init(void) {
     extern uint32_t __bss_end_kern;
     
     // user space usage not allowed, only kernel is mapped
-    page_index_early_map(entrypgdir, (addr_t)0, (void *)KERN_BASE, &__bss_end_kern - (uint32_t *)KERN_BASE);
+    page_index_early_map(entrypgdir, (addr_t)0, 
+        (void *)KERN_BASE, PHYSTOP);
     
     // invalidate low addr pages (user space)
     page_early_clear_user(entrypgdir);

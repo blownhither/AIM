@@ -46,7 +46,7 @@ freerange(void *vstart, void *vend)
   for(; p + PGSIZE <= (addr_t*)vend; p += PGSIZE)
     kfree(p);
 }
-
+/*
 void
 kfree(addr_t *v)
 {
@@ -66,7 +66,7 @@ kfree(addr_t *v)
   if(kmem.use_lock)
     release(&kmem.lock);
 }
-
+*/
 addr_t*
 kalloc(void)
 {

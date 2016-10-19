@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <aim/vmm.h>
+#include <aim/panic.h>
+#include <aim/mmu.h>
 
 /* This file is for simple allocator */
 
@@ -12,14 +14,14 @@
 #define BLOCK_SIZE 0x8
 #define BLOCK_MASK (BLOCK_SIZE - 1)
 #define BLOCK_ROUNDUP(x) (((x) + BLOCK_SIZE - 1) & BLOCK_MASK)
-#define EARLY_BUF_SIZE (256<<12)    
+const int EARLY_BUF_SIZE = (256<<12);
     
 #define MZY_DEBUG    
     
 struct early_header {
     uint16_t size;      // free space left
     void *start;
-    bool initialized = false;
+    bool initialized;
 } eh;
 
 //TODO: early alloc does not free?
@@ -47,19 +49,25 @@ static void *early_simple_alloc(size_t size, gfp_t flags) {
     return ret;
 }
 
-static struct simple_allocator temp_simple_allocator;
-void master_simple_alloc() {
-    //TODO: do it here?
+static struct simple_allocator temp_simple_allocator = {
+    	.alloc	= early_simple_alloc,
+    	.free	= NULL,
+	    .size	= NULL
+    };
 
+void sleep1();
+void page_alloc_init(void *start, void *end);
+
+void master_simple_alloc() {
+ 
     uint8_t buf[EARLY_BUF_SIZE];
     early_simple_init((void *)buf, EARLY_BUF_SIZE);
-    temp_simple_allocator = {
-    	.alloc	= early_simple_alloc,
-    	.free	= __simple_free,
-	    .size	= __simple_size
-    };
+    temp_simple_allocator.alloc = early_simple_alloc;
     set_simple_allocator(&temp_simple_allocator);
     
-    //TODO: call some page_alloc_init here
+    // TODO: upper bound?
+    page_alloc_init(&__end, (void *)KERN_BASE + PHYSTOP);
+    
+    sleep1();
 }
 

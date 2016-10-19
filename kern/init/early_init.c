@@ -31,11 +31,11 @@ void set_cr_mmu();
 __noreturn
 void master_early_init(void)
 {
-	early_mapping_clear();  //TODO: why
-	mmu_handlers_clear();   //TODO: why
+	
+	early_mapping_clear();  
+	mmu_handlers_clear();   
 	arch_early_init();
 	
-	set_cr_mmu();    // also jmp to new target
     
 	goto panic;
 
@@ -45,17 +45,13 @@ panic:
     
 }
 
+void master_early_continue() {
+    
+}
 
 void inf_loop() {
     while(1);
 }
-
-void continue_early_init(void) {
-    early_mm_init();
-    
-    inf_loop();
-}
-
 
 
 

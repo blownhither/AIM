@@ -29,6 +29,7 @@
 #include <libc/string.h>
 
 /* dummy implementations */
+
 static void *__simple_alloc(size_t size, gfp_t flags) { return NULL; }
 static void __simple_free(void *obj) {}
 static size_t __simple_size(void *obj) { return 0; }
@@ -49,6 +50,7 @@ void *kmalloc(size_t size, gfp_t flags)
 	//recursive_lock_irq_save(&memlock, intr_flags);
 	result = __simple_allocator.alloc(size, flags);
 	//recursive_unlock_irq_restore(&memlock, intr_flags);
+	//TODO: if error?
 	if (flags & GFP_ZERO)
 		memset(result, 0, size);
 	return result;

@@ -10,13 +10,6 @@
 
 addr_t* kalloc(void);
 
-// Clear low-addr mapping to disable user space while kernel is high
-void page_index_clear(pgindex_t *boot_page_index) {
-    //TODO: write invalid pagedir to?
-    uint32_t n = KERN_BASE / (4<<20);   // 4M page 
-    memset(entrypgdir, 0, n << 2);   
-}
-
 // Map 4M pages with specified paddr and vaddr
 int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 	void *vaddr, size_t size) {
@@ -42,31 +35,43 @@ static int set_early_pages_perm(pgindex_t *boot_page_index, void *va,
     return end - va;
 }
 */
+
+static void page_early_clear_user(pgindex_t *i) {
+    uint32_t n = KERN_BASE / (4<<20);   // 4M page 
+    memset(i, 0, n << 2);   
+}
+
 // Set up linear mapping for early mapping
 void early_mm_init(void) {
-    // user space usage not allowed, only kernel is mapped
-    page_index_early_map(entrypgdir, (addr_t)0, (void *)KERN_BASE, PHYSTOP - 0);
+    extern uint32_t __bss_end_kern;
     
-    // set kernel text section readable only
-    /*
-    extern uint32_t __text_start_kern, __text_end_kern;
-    set_early_pages_perm(entrypgdir, &__text_start_kern, 
-        &__text_end_kern, PTE_P | PTE_PS);
-    */
+    // user space usage not allowed, only kernel is mapped
+    page_index_early_map(entrypgdir, (addr_t)0, (void *)KERN_BASE, &__bss_end_kern - (uint32_t *)KERN_BASE);
     
     // invalidate low addr pages (user space)
-    page_index_clear(entrypgdir);
+    page_early_clear_user(entrypgdir);
 }
 
 /***************************************************************/
-// TODO: merge remain
+// check validity of PDE
 bool early_mapping_valid(struct early_mapping *entry)
 {
 	return true;
 }
 
+// load boot_page_index as %%cr3
 void mmu_init(pgindex_t *boot_page_index)
 {
+    __asm__ __volatile__ (
+        "movl   %0, %%eax;"
+        "movl   %%eax, %%cr3"
+        :"=m"(boot_page_index)
+        :
+    );
+}
+
+void page_index_clear(pgindex_t *boot_page_index) {
+    memset(boot_page_index, 0, PGSIZE);  //TODO: hlt?
 }
 
 /***********************************/
@@ -86,7 +91,7 @@ static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
         *pde = premap_addr(pt) | PTE_P | PTE_W | PTE_U;
     }
     return &pt[PTX(vaddr)];
-    
+
     
 }
 

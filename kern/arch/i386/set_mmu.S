@@ -37,6 +37,6 @@ set_cr_mmu:
     // high addresses. The indirect call is needed because
     // the assembler produces a PC-relative instruction
     // for a direct jump.
-    mov $continue_early_init, %eax
+    mov $arch_early_continue, %eax
     jmp *%eax
      

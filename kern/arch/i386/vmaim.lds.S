@@ -74,6 +74,7 @@ SECTIONS
 		PROVIDE(kstack_top = .);
 	}
 */
+    . = ALIGN(4096);
 	.end = .;
 	PROVIDE(__end = .);
 	

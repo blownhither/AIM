@@ -1,0 +1,65 @@
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
+#include <sys/types.h>
+#include <sys/param.h>
+#include <aim/vmm.h>
+
+/* This file is for simple allocator */
+
+// #define NEXT_BLOCK(x) (void *)(&(x).start + (x).size)
+#define BLOCK_SIZE 0x8
+#define BLOCK_MASK (BLOCK_SIZE - 1)
+#define BLOCK_ROUNDUP(x) (((x) + BLOCK_SIZE - 1) & BLOCK_MASK)
+#define EARLY_BUF_SIZE (256<<12)    
+    
+#define MZY_DEBUG    
+    
+struct early_header {
+    uint16_t size;      // free space left
+    void *start;
+    bool initialized = false;
+} eh;
+
+//TODO: early alloc does not free?
+
+// continous stack space for early simple allocator
+static void early_simple_init(void *start, uint16_t size) {
+    eh.start = start;
+    eh.size = size;
+    eh.initialized = true;
+}
+
+static void *early_simple_alloc(size_t size, gfp_t flags) {
+    size = BLOCK_ROUNDUP(size);
+    if(size > eh.size || !eh.initialized) {
+        
+        #ifdef MZY_DEBUG
+        panic("early_simple_alloc failed");
+        #endif
+        
+        return NULL;    
+    }
+    void *ret = eh.start;
+    eh.size -= size;
+    eh.start += size;
+    return ret;
+}
+
+static struct simple_allocator temp_simple_allocator;
+void master_simple_alloc() {
+    //TODO: do it here?
+
+    uint8_t buf[EARLY_BUF_SIZE];
+    early_simple_init((void *)buf, EARLY_BUF_SIZE);
+    temp_simple_allocator = {
+    	.alloc	= early_simple_alloc,
+    	.free	= __simple_free,
+	    .size	= __simple_size
+    };
+    set_simple_allocator(&temp_simple_allocator);
+    
+    //TODO: call some page_alloc_init here
+}
+

@@ -38,7 +38,7 @@ void clear_bss_kern(){
 
 static struct segdesc kern_gdt[NSEGS];
 
-static void arch_load_gdt() {
+void arch_load_gdt() {
     
     kern_gdt[0] = SEG(0,0,0,0);
     kern_gdt[SEG_KCODE] = SEG(STA_X|STA_R, 0, 0xffffffff, 0);
@@ -62,14 +62,20 @@ pde_t entrypgdir[NPDENTRIES] = {
 };
 
 void set_cr_mmu();
+void master_early_continue();
 
 void arch_early_init(void)
 {
+
     arch_load_gdt();    // get a new gdt other than bootloader one
+    set_cr_mmu();
+    // jump to arch_early_continue
     
-    
-    
-    
+}
+
+void arch_early_continue() {
+    early_mm_init();
+    master_early_continue();
 }
 
 

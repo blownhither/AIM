@@ -43,7 +43,7 @@ static void page_early_clear_user(pgindex_t *i) {
 
 // Set up linear mapping for early mapping
 void early_mm_init(void) {
-    extern uint32_t __bss_end_kern;
+    // extern uint32_t __bss_end_kern;
     
     // user space usage not allowed, only kernel is mapped
     page_index_early_map(entrypgdir, (addr_t)0, 

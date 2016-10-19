@@ -14,7 +14,7 @@
 #define BLOCK_SIZE 0x8
 #define BLOCK_MASK (BLOCK_SIZE - 1)
 #define BLOCK_ROUNDUP(x) (((x) + BLOCK_SIZE - 1) & BLOCK_MASK)
-const int EARLY_BUF_SIZE = (256<<12);
+#define EARLY_BUF_SIZE (1<<12)
     
 #define MZY_DEBUG    
     
@@ -58,11 +58,12 @@ static struct simple_allocator temp_simple_allocator = {
 void sleep1();
 void page_alloc_init(void *start, void *end);
 
+static uint8_t buf[EARLY_BUF_SIZE];
+
 void master_simple_alloc() {
- 
-    uint8_t buf[EARLY_BUF_SIZE];
+    
     early_simple_init((void *)buf, EARLY_BUF_SIZE);
-    temp_simple_allocator.alloc = early_simple_alloc;
+    // temp_simple_allocator.alloc = early_simple_alloc;
     set_simple_allocator(&temp_simple_allocator);
     
     // TODO: upper bound?

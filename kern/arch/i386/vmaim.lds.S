@@ -62,18 +62,6 @@ SECTIONS
         __bss_end_kern = .;
     }
 
-    
-
-	// TODO: the following is suggested
-/*
-	.bss : {
-		*(.bss);
-		. = ALIGN(4096);
-		PROVIDE(kstack = .);
-		. += KSTACKSIZE;
-		PROVIDE(kstack_top = .);
-	}
-*/
     . = ALIGN(4096);
 	.end = .;
 	PROVIDE(__end = .);

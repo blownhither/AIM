@@ -31,7 +31,9 @@ set_cr_mmu:
     movl    %eax, %cr0
 
     // move esp pointer
-    add     $KERN_BASE, %esp
+    // add     $KERN_BASE, %esp
+    mov     $__kstack_top, %esp
+
     
     // Jump and switch to executing at
     // high addresses. The indirect call is needed because

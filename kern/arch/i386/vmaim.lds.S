@@ -40,16 +40,13 @@ SECTIONS
 	__text_end_kern = .;
 	
 	// . = ALIGN(1024 * 1024 * 4); // ensure seperate pages even in 4M paging
+	.rodata :
+        {*(.rodata);}
+	
 	.data   : 
-	    // AT(LOADADDR(.text) + SIZEOF(.text)) 
 	    {*(.data);}
 
-    .rodata :
-        // AT(LOADADDR(.bss) + SIZEOF(.bss)) 
-        {*(.rodata);}
-
 	.bss    : 
-	    // AT(LOADADDR(.data) + SIZEOF(.data))
 	{
         __bss_start_kern = .; 
         *(.bss);

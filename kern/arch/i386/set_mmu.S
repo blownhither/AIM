@@ -21,6 +21,7 @@ set_cr_mmu:
     movl    %cr4, %eax
     orl     $(CR4_PSE), %eax
     movl    %eax, %cr4
+    
     // Set page directory
     movl    $entrypgdir-KERN_BASE, %eax
     movl    %eax, %cr3
@@ -34,11 +35,6 @@ set_cr_mmu:
     // add     $KERN_BASE, %esp
     mov     $__kstack_top, %esp
 
-    
-    // Jump and switch to executing at
-    // high addresses. The indirect call is needed because
-    // the assembler produces a PC-relative instruction
-    // for a direct jump.
     mov $arch_early_continue, %eax
     jmp *%eax
      

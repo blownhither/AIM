@@ -22,20 +22,22 @@ struct early_header {
     uint16_t size;      // free space left
     void *start;
     bool initialized;
-} eh;
+} ;
 
-//TODO: early alloc does not free?
+static struct early_header temp_eh;
 
 // continous stack space for early simple allocator
-static void early_simple_init(void *start, uint16_t size) {
-    eh.start = start;
-    eh.size = size;
-    eh.initialized = true;
+static void early_simple_init(struct early_header *eh, 
+    void *start, uint16_t size) 
+{
+    eh->start = start;
+    eh->size = size;
+    eh->initialized = true;
 }
 
-static void *early_simple_alloc(size_t size, gfp_t flags) {
+void *early_simple_alloc(size_t size, gfp_t flags) {
     size = BLOCK_ROUNDUP(size);
-    if(size > eh.size || !eh.initialized) {
+    if(size > temp_eh.size || !temp_eh.initialized) {
         
         #ifdef MZY_DEBUG
         panic("early_simple_alloc failed");
@@ -43,27 +45,27 @@ static void *early_simple_alloc(size_t size, gfp_t flags) {
         
         return NULL;    
     }
-    void *ret = eh.start;
-    eh.size -= size;
-    eh.start += size;
+    void *ret = temp_eh.start;
+    temp_eh.size -= size;
+    temp_eh.start += size;
     return ret;
 }
-
-static struct simple_allocator temp_simple_allocator = {
-    	.alloc	= early_simple_alloc,
-    	.free	= NULL,
-	    .size	= NULL
-    };
 
 void sleep1();
 void page_alloc_init(void *start, void *end);
 
-static uint8_t buf[EARLY_BUF_SIZE];
+static struct simple_allocator temp_simple_allocator = {
+	.alloc	= early_simple_alloc,
+	.free	= NULL,
+    .size	= NULL
+};
 
 void master_simple_alloc() {
+    static uint8_t buf[EARLY_BUF_SIZE];
     
-    early_simple_init((void *)buf, EARLY_BUF_SIZE);
+    early_simple_init(&temp_eh, (void *)buf, EARLY_BUF_SIZE);
     // temp_simple_allocator.alloc = early_simple_alloc;
+    
     set_simple_allocator(&temp_simple_allocator);
     
     // TODO: upper bound?

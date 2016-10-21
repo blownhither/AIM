@@ -20,17 +20,18 @@
     
 struct early_header {
     uint16_t size;      // free space left
-    void *start;
+    void *start;        // start of free space
+    void *head;         // start of whole space
     bool initialized;
 } ;
 
 static struct early_header temp_eh;
 
 // continous stack space for early simple allocator
-static void early_simple_init(struct early_header *eh, 
+void early_simple_init(struct early_header *eh, 
     void *start, uint16_t size) 
 {
-    eh->start = start;
+    eh->start = eh->head = start;
     eh->size = size;
     eh->initialized = true;
 }

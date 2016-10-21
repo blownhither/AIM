@@ -10,19 +10,24 @@
 
 addr_t* kalloc(void);
 
+#define PGSIZE_EXT (PGSIZE<<10)
+
 // Map 4M pages with specified paddr and vaddr
 int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 	void *vaddr, size_t size) {
     
-    vaddr_t *va = (vaddr_t *)vaddr;
-    vaddr_t *end = (vaddr_t *)(vaddr + size);
+    // void *va = (void *)PGROUNDDOWN((uint32_t)vaddr);
+    // void *end = (void *)PGROUNDUP((uint32_t)vaddr + size);
+    void *va = vaddr;
+    void *end = vaddr + size;
+    
     pte_t *pte;
-    for(; va < end; va += PGSIZE) {
+    for(; va < end; va += PGSIZE_EXT) {
         pte = (pte_t *)&boot_page_index[PDX(va)];
         *pte = (uint32_t)(paddr | PTE_P | PTE_W | PTE_PS);
-        paddr += PGSIZE;
+        paddr += PGSIZE_EXT;
     }
-    return end - va;
+    return (void *)end - vaddr;
 }
 /*
 static int set_early_pages_perm(pgindex_t *boot_page_index, void *va, 
@@ -48,7 +53,7 @@ void early_mm_init(void) {
     // user space usage not allowed, only kernel is mapped
     page_index_early_map(entrypgdir, (addr_t)0, 
         (void *)KERN_BASE, PHYSTOP);
-    
+
     // invalidate low addr pages (user space)
     page_early_clear_user(entrypgdir);
 }

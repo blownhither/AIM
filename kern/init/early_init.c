@@ -45,10 +45,11 @@ panic:
     
 }
 
-void master_simple_alloc();
+void master_early_simple_alloc();
 
 void master_early_continue() {
-    master_simple_alloc();
+    master_early_simple_alloc();
+    sleep1();
 
 }
 

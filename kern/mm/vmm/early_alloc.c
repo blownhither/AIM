@@ -61,7 +61,7 @@ static struct simple_allocator temp_simple_allocator = {
     .size	= NULL
 };
 
-void master_simple_alloc() {
+void master_early_simple_alloc() {
     static uint8_t buf[EARLY_BUF_SIZE];
     
     early_simple_init(&temp_eh, (void *)buf, EARLY_BUF_SIZE);

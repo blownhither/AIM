@@ -35,7 +35,8 @@ struct page_node {              // saved on kernel space
 struct page_node *pool[NLEVEL];
 
 static struct page_node *new_page_node() {
-    struct page_node *temp = (struct page_node *)kmalloc(sizeof(struct page_node), GFP_ZERO);
+    struct page_node *temp = 
+        (struct page_node *)kmalloc(sizeof(struct page_node), GFP_ZERO);
     if(temp != NULL)
         memset(temp, 0, sizeof(struct page_node));
     return temp;

@@ -2,6 +2,8 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+/*
+
 #include "sys/types.h"
 #include "aim/mmu.h"
 #include "aim/spinlock.h"
@@ -46,6 +48,7 @@ freerange(void *vstart, void *vend)
   for(; p + PGSIZE <= (addr_t*)vend; p += PGSIZE)
     kfree(p);
 }
+*/
 /*
 void
 kfree(addr_t *v)
@@ -67,6 +70,7 @@ kfree(addr_t *v)
     release(&kmem.lock);
 }
 */
+/*
 addr_t*
 kalloc(void)
 {
@@ -81,3 +85,4 @@ kalloc(void)
     release(&kmem.lock);
   return (addr_t*)r;
 }
+*/

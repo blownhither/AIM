@@ -6,6 +6,7 @@
 #include <aim/early_kmmap.h>
 #include <aim/mmu.h>
 #include <aim/panic.h>
+#include <aim/pmm.h>
 #include <libc/string.h>
 
 addr_t* kalloc(void);
@@ -90,7 +91,7 @@ static pte_t* walk_page_dir(pgindex_t *pgindex, vaddr_t *vaddr, int alloc) {
     if(*pde & PTE_P){
             pt = (pte_t*)postmap_addr(PTE_ADDR(*pde));  //PTE_ADDR + KERN_BASE
     } else {
-        if(!alloc || (pt = (pte_t*)kalloc()) == 0)
+        if(!alloc || (pt = (pte_t *)pgalloc()) == 0)
             return 0;
         memset(pt, 0, PGSIZE);  // static inline in arch-mmu.h
         *pde = premap_addr(pt) | PTE_P | PTE_W | PTE_U;

@@ -32,8 +32,11 @@ struct page_node {              // saved on kernel space
     struct page_node *pre;
 };
 
-struct page_node *pool[NLEVEL];
+struct page_node *pool[NLEVEL]; // pool for free pages
 
+static uint64_t global_empty_pages = 0;
+
+/*************** Data structure interface ***************************/
 static struct page_node *new_page_node() {
     struct page_node *temp = 
         (struct page_node *)kmalloc(sizeof(struct page_node), GFP_ZERO);
@@ -66,6 +69,7 @@ static struct page_node *from_pool(int n) {
     return ret;
 }
 
+/*************** Inner Util Functions ***************************/
 static void *page_init_range(void *start, void *end, uint8_t order) {
     // order in [0, NLEVEL-1]
     size_t size = (PGSIZE) << order;
@@ -85,7 +89,7 @@ static struct page_node *split_page_node(int order) {
     // split until specified order has available node
     // assume pool[order] is empty
     struct page_node *target;
-    int top = order + 1; 
+    int top = order; 
     
     while(top < NLEVEL) {
         target = from_pool(top);
@@ -105,6 +109,7 @@ static struct page_node *split_page_node(int order) {
         r = new_page_node();
         target->left = l;
         l->sib = r;
+        r->sib = l;
         l->parent = r->parent = target; 
         l->flags = NODE_USED;
         r->flags = NODE_UNUSED;
@@ -116,6 +121,7 @@ static struct page_node *split_page_node(int order) {
     return l;
 }
 
+/*************** Interfaces and bundle parts ***************************/
 // return with paddr in pages, to be bundled in the __alloc
 int bundle_pages_alloc(struct pages *pages) {
     int n = (pages->size + PGSIZE - 1) / PGSIZE;
@@ -129,15 +135,38 @@ int bundle_pages_alloc(struct pages *pages) {
     struct page_node *node = from_pool(order);
     if(node == NULL) {
         // need split
-        node = split_page_node(order);
+        node = split_page_node(order + 1);  // split higher order
         if(node == NULL)
             return EOF;
     }
             
     node->flags = NODE_USED;
     pages->paddr = (size_t)node->paddr;
+    
+    global_empty_pages -= npages;
     return 1;
 
+}
+
+// free a page (paddr) for page pool without affecting page table
+int bundle_pages_free(struct pages *pages) {
+    int n = (pages->size + PGSIZE - 1) / PGSIZE;
+    int npages = 0x1, order = 0;
+    while(npages < n) {
+        npages <<= 1;
+        order ++;
+    }
+    if(order >= NLEVEL)
+        return EOF;
+
+
+    //TODO: affect page table ? 
+    global_empty_pages += npages;
+}
+
+//TODO: what to get?!?!
+int bundle_get_free() {
+    return (int)(global_empty_pages * PGSIZE);
 }
 
 void page_alloc_init(void *start, void *end) {
@@ -148,7 +177,8 @@ void page_alloc_init(void *start, void *end) {
     // Round addr conservatively
     start = (void *)PGROUNDUP((uint32_t)start);
     end = (void *)PGROUNDDOWN((uint32_t)end);
-    
+
+    global_empty_pages = (end - start) / PGSIZE;
     // Free every page
     for(int i=0; i<NLEVEL; i++) {
         start = page_init_range(start, end, NLEVEL - 1 - i); 

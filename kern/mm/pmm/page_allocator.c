@@ -16,9 +16,10 @@
 
 // 32M block at most
 #define NLEVEL 11
-#define MAX_BLOCK ((PGSIZE)<<(NLEVEL - 1))
-#define PAGE_FRAME(x) (x>>12)
-#define BIT_COUNT(paddr, order) (PAGE_FRAME(paddr) << (order+1))
+#define MAX_BLOCK ((PGSIZE)<<((NLEVEL) - 1))
+#define PAGE_FRAME(x) ((x)>>12)
+#define BIT_COUNT(order, paddr) (PAGE_FRAME((paddr)) >> ((order)+1))
+#define BLOCK_ALIGN(order, paddr) ((paddr) & ~((PGSIZE<<(order)) - 1))
 
 // Bitmap
 typedef uint8_t bitmap;     // uint8_t[ 7 ~ 0 ]
@@ -106,6 +107,27 @@ static addr_t from_pool(int order) {
     return ret;
 }
 
+static struct page_node *search_pool(int order, addr_t paddr) {
+    struct list_head *p, *head = &pool[order].head;
+    struct page_node *temp;
+    bool found = false;
+    for_each(p, head) {
+        temp = HEAD2NODE(p);
+        if(temp->paddr == paddr) {
+            found = true;
+            break;
+        }
+    }
+    if(found) 
+        return temp;
+    else 
+        return NULL;
+}
+
+static void delete_list_node(struct list_head* head) {
+    list_del(head);
+}
+
 /*************** Inner Util Functions ***************************/
 
 static addr_t page_init_range(addr_t start, addr_t end, uint8_t order) {
@@ -142,15 +164,56 @@ static addr_t split_page_node(int order) {
 
         // order i block is used but don't set highest level
         if(i != NLEVEL - 1)
-            switch_map_bitcount(i, BIT_COUNT(start, i));
+            switch_map_bitcount(i, BIT_COUNT(i, start));
         // add left child in pool
         add_pool(i-1, start);
         // lower level is sure to be 1
-        set_map_bitcount(i-1, BIT_COUNT(start, i-1), 0);
+        set_map_bitcount(i-1, BIT_COUNT(i-1, start), 0);
         start = start + (PGSIZE<<order);
         
     }
     return start;
+}
+
+static uint32_t merge_page_node(int order, addr_t paddr) {
+    // assume paddr is already aligned
+    uint8_t temp;
+    struct page_node *node;
+    addr_t p1, p2;
+    while(1){
+        temp = read_map_bitcount(order, BIT_COUNT(order, paddr));
+        if(temp) {
+            // should merge
+            // recycle from free pool
+            
+            p1 = BLOCK_ALIGN(order + 1, paddr); // plus one to get left sib
+            p2 = p1 + (PGSIZE << order);    // right sib
+            if(p1 == paddr) 
+                node = search_pool(order, p2);
+            else if(p2 == paddr)
+                node = search_pool(order, p1);
+            else {
+                panic("merge_page_node: unexpected calculation");
+            }
+            
+            if(node == NULL) {
+                panic("merge_page_node: Illegal status missing pool node");
+            }
+
+            delete_list_node(&node->head);
+            switch_map_bitcount(order, BIT_COUNT(order, paddr));
+
+            // prepare for next loop
+            order ++;
+            paddr = p1;
+
+        }
+        else {
+            // 0 in bitmap means sib used
+            break;
+        } 
+    }
+    return (1 << order);
 }
 
 /*************** Interfaces and bundle parts ***************************/
@@ -166,11 +229,10 @@ void page_alloc_init(addr_t start, addr_t end) {
     start = PGROUNDUP(start);
     end = PGROUNDDOWN(end);
 
+    end = page_init_range(start, end, NLEVEL - 1); 
+
     global_empty_pages = (end - start) / PGSIZE;
     // Free every page
-
-    page_init_range(start, end, NLEVEL - 1); 
-
 }
 
 int bundle_pages_alloc(struct pages *pages) {
@@ -190,7 +252,7 @@ int bundle_pages_alloc(struct pages *pages) {
             return EOF;
         // split set bitmap 0
     }
-    switch_map_bitcount(order, BIT_COUNT(paddr, order));
+    switch_map_bitcount(order, BIT_COUNT(order, paddr));
     
     pages->paddr = paddr;
     global_empty_pages -= npages;
@@ -199,8 +261,22 @@ int bundle_pages_alloc(struct pages *pages) {
 
 int bundle_pages_free(struct pages *pages) {
 
-    //TODO:
-    return 0;
+    // assume [paddr, paddr+size) is inside proper block
+    // TODO: and has no subblock? 
+    int n = (pages->size + PGSIZE - 1) / PGSIZE;
+    int npages = 0x1, order = 0;
+    while(npages < n) {
+        npages <<= 1;
+        order ++;
+    }
+    if(order >= NLEVEL)
+        return EOF;
+
+    addr_t start = BLOCK_ALIGN(order, pages->paddr);
+    npages = merge_page_node(order, start);    
+    global_empty_pages += npages;
+    
+    return npages;
 
 }
 

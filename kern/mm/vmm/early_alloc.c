@@ -53,7 +53,7 @@ void *early_simple_alloc(size_t size, gfp_t flags) {
 }
 
 void sleep1();
-void page_alloc_init(void *start, void *end);
+void page_alloc_init(addr_t start, addr_t end);
 
 static struct simple_allocator temp_simple_allocator = {
 	.alloc	= early_simple_alloc,
@@ -70,7 +70,7 @@ void master_early_simple_alloc() {
     set_simple_allocator(&temp_simple_allocator);
     
     // TODO: upper bound?
-    page_alloc_init(&__end, (void *)KERN_BASE + PHYSTOP);
+    page_alloc_init(premap_addr(&__end), premap_addr(KERN_BASE + PHYSTOP));
     
     sleep1();
 }

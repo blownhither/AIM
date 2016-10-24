@@ -9,13 +9,202 @@
 #include <aim/mmu.h>
 #include <libc/string.h>
 #include <aim/vmm.h>
+#include <aim/panic.h>
+#include <list.h>
 
 /* Designed for allocate consecutive pages */
 
 // 32M block at most
-#define NLEVEL 13
+#define NLEVEL 11
 #define MAX_BLOCK ((PGSIZE)<<(NLEVEL - 1))
+#define PAGE_FRAME(x) (x>>12)
+#define BIT_COUNT(paddr, order) (PAGE_FRAME(paddr) << (order+1))
 
+// Bitmap
+typedef uint8_t bitmap;     // uint8_t[ 7 ~ 0 ]
+bitmap *page_map[NLEVEL];
+// static int ntop_level_pages = 0;
+#define MAP_SIZE(x) ((x + 7)>>3)
+
+// Free page pool
+struct page_node {
+    addr_t paddr;
+    struct list_head head;
+};
+static struct page_node pool[NLEVEL];
+#define HEAD2NODE(x) (list_entry(x, struct page_node, head))
+
+// Statistics
+static uint64_t global_empty_pages = 0;
+
+/*************** Data structure interface ***************************/
+static uint8_t read_map_bitcount(int order, int bitcount) {
+    if(order >= NLEVEL || page_map[order] == NULL) { 
+        panic("read_map illeagal status");
+    }
+    bitmap *map = page_map[order];
+    uint8_t temp = map[bitcount >> 3]; 
+    temp = (temp >> (bitcount & 0x7)) & 0x1;
+    return temp;
+}
+
+static void switch_map_bitcount(int order, int bitcount) {
+    if(order >= NLEVEL || page_map[order] == NULL) { 
+        panic("read_map illeagal status");
+    }
+    bitmap *map = page_map[order];
+    uint8_t mask = 1 << (bitcount & 0x7);
+    map[bitcount >> 3] ^= mask;
+}
+
+static void set_map_bitcount(int order, int bitcount, uint8_t bit) { 
+    if(order >= NLEVEL || page_map[order] == NULL) { 
+        panic("read_map illeagal status");
+    }
+    bitmap *map = page_map[order];
+    uint8_t mask = 1 << (bitcount & 0x7);
+    bit &= 0x1;
+    map[bitcount >> 3] = (~mask | map[bitcount >> 3]) 
+        | (bit << (bitcount & 0x7));
+}
+
+static struct page_node *new_page_node() {
+    struct page_node *temp = 
+        (struct page_node *)kmalloc(sizeof(struct page_node), GFP_ZERO);
+    if(temp != NULL)
+        memset(temp, 0, sizeof(struct page_node));
+    else
+        panic("new_page_node fail to alloc");
+    return temp;
+}
+
+static void delete_page_node(struct page_node *node) {
+    kfree(node);
+} 
+
+static struct page_node *add_pool(int order, addr_t paddr) {
+
+    struct page_node *temp = new_page_node();
+    temp->paddr = paddr;
+    list_init(&temp->head);
+
+    list_add(&temp->head, &pool[order].head);
+    return temp;
+}
+
+static addr_t from_pool(int order) {
+    addr_t ret;
+    if(list_empty(&pool[order].head)) {
+        return EOF;
+    }
+    else {
+        struct page_node *temp = HEAD2NODE(pool[order].head.next);
+        ret = temp->paddr; // head should not be used
+        list_del(&temp->head);
+        delete_page_node(temp);
+    }
+    return ret;
+}
+
+/*************** Inner Util Functions ***************************/
+
+static addr_t page_init_range(addr_t start, addr_t end, uint8_t order) {
+    // order in [0, NLEVEL-1]
+    size_t size = (PGSIZE) << order;
+    while((end - start) > 2 * size) {
+        // free [start, start + size) and one more to make a pair
+        add_pool(order, start);
+        start += size;
+        add_pool(order, start);
+        start += size;
+    }
+    return start;   // start less than or equal to end
+}
+
+static addr_t split_page_node(int order) {
+    // split (order, top]
+
+    int top = order; 
+    addr_t start;
+    while(top < NLEVEL) {
+       start = from_pool(top);
+        if(start == EOF)
+            break;
+        top ++;
+    }
+    if(top >= NLEVEL || top == order) {
+        return EOF;
+    }
+
+    // split from top to order (loop recursive)
+    for(int i=top; i>order; --i) {
+        // split order i to get (i-1)
+
+        // order i block is used but don't set highest level
+        if(i != NLEVEL - 1)
+            switch_map_bitcount(i, BIT_COUNT(start, i));
+        // add left child in pool
+        add_pool(i-1, start);
+        // lower level is sure to be 1
+        set_map_bitcount(i-1, BIT_COUNT(start, i-1), 0);
+        start = start + (PGSIZE<<order);
+        
+    }
+    return start;
+}
+
+/*************** Interfaces and bundle parts ***************************/
+// Manage PADDR
+void page_alloc_init(addr_t start, addr_t end) {
+    // Initialize
+    for(int i=0; i<NLEVEL; ++i) {
+        pool[i].paddr = EOF;
+        list_init(&pool[i].head);
+    }
+    
+    // Round addr conservatively
+    start = PGROUNDUP(start);
+    end = PGROUNDDOWN(end);
+
+    global_empty_pages = (end - start) / PGSIZE;
+    // Free every page
+
+    page_init_range(start, end, NLEVEL - 1); 
+
+}
+
+int bundle_pages_alloc(struct pages *pages) {
+    int n = (pages->size + PGSIZE - 1) / PGSIZE;
+    int npages = 0x1, order = 0;
+    while(npages < n) {
+        npages <<= 1;
+        order ++;
+    }
+    if(order >= NLEVEL)
+        return EOF;
+    addr_t paddr = from_pool(order);
+    if(EOF == paddr) {
+        // need split
+        paddr = split_page_node(order);  // split (order, top]
+        if(paddr == EOF)
+            return EOF;
+        // split set bitmap 0
+    }
+    switch_map_bitcount(order, BIT_COUNT(paddr, order));
+    
+    pages->paddr = paddr;
+    global_empty_pages -= npages;
+    return 1;
+}
+
+int bundle_pages_free(struct pages *pages) {
+
+    //TODO:
+    return 0;
+
+}
+
+/*
 #define NODE_UNUSED 0x0
 #define NODE_USED   0x1
 #define NODE_SPLIT  0x2
@@ -34,20 +223,12 @@ struct page_node {              // saved on kernel space
 
 struct page_node *pool[NLEVEL]; // pool for free pages
 
-static uint64_t global_empty_pages = 0;
 
-/*************** Data structure interface ***************************/
-static struct page_node *new_page_node() {
-    struct page_node *temp = 
-        (struct page_node *)kmalloc(sizeof(struct page_node), GFP_ZERO);
-    if(temp != NULL)
-        memset(temp, 0, sizeof(struct page_node));
-    return temp;
-}
 
-static void delete_page_node(struct page_node *node) {
-    kfree(node);
-} 
+
+
+
+
 
 static void add_pool(int n, struct page_node *node) {
     // insert between pool[n] and its next
@@ -69,59 +250,37 @@ static struct page_node *from_pool(int n) {
     return ret;
 }
 
-/*************** Inner Util Functions ***************************/
-static void *page_init_range(void *start, void *end, uint8_t order) {
-    // order in [0, NLEVEL-1]
-    size_t size = (PGSIZE) << order;
-    struct page_node *temp;
-    while((end - start) > size) {
-        // free [start, start + size)
-        // all these root have no sibling
-        temp = new_page_node();
-        temp->paddr = start;
-        add_pool(order, temp);
-        start += size;
-    }
-    return start;
-}
+
+
 
 static struct page_node *split_page_node(int order) {
     // split until specified order has available node
     // assume pool[order] is empty
-    struct page_node *target;
-    int top = order; 
-    
-    while(top < NLEVEL) {
-        target = from_pool(top);
-        if(target != NULL)
-            break;
-        top ++;
-    }
-    if(top >= NLEVEL) {
-        return NULL;
-    }
 
-    struct page_node *l = NULL, *r = NULL;
-    // split from top to order (loop recursive)
-    for(int i=top; i>order; --i) {
-        target->flags = NODE_SPLIT;
-        l = new_page_node();
-        r = new_page_node();
-        target->left = l;
-        l->sib = r;
-        r->sib = l;
-        l->parent = r->parent = target; 
-        l->flags = NODE_USED;
-        r->flags = NODE_UNUSED;
-        add_pool(i, r);
-        target = l;
-    }
-
-    // use l
-    return l;
 }
 
-/*************** Interfaces and bundle parts ***************************/
+// merge with sibling to get parent, provided the order of node
+static void merge_page_node(struct page_node *node, int order) {
+    if(node == NULL) {
+        panic("Illegal parameter for merge_paged_node ");
+    }
+    // top level node has no sib
+    struct page_node *temp;
+    while(node->sibling != NULL && node->sibling->flags == NODE_UNUSED) {
+        node->parent->flags = NODE_UNUSED;
+        node->parent->paddr = NULL;
+        node->parent->left = NULL;
+        temp = node;
+
+        delete_page_node(temp->sib);
+        delete_page_node(temp);
+        node = node->parent;
+        order ++;
+    }
+    add_pool()
+}
+
+
 // return with paddr in pages, to be bundled in the __alloc
 int bundle_pages_alloc(struct pages *pages) {
     int n = (pages->size + PGSIZE - 1) / PGSIZE;
@@ -169,22 +328,6 @@ int bundle_get_free() {
     return (int)(global_empty_pages * PGSIZE);
 }
 
-void page_alloc_init(void *start, void *end) {
-    // Initialize
-    for(int i=0; i<NLEVEL; ++i)
-        pool[i] = NULL;
-    
-    // Round addr conservatively
-    start = (void *)PGROUNDUP((uint32_t)start);
-    end = (void *)PGROUNDDOWN((uint32_t)end);
+/
 
-    global_empty_pages = (end - start) / PGSIZE;
-    // Free every page
-    for(int i=0; i<NLEVEL; i++) {
-        start = page_init_range(start, end, NLEVEL - 1 - i); 
-        if(start >= end) 
-            break;
-    }
-
-}
-
+*/

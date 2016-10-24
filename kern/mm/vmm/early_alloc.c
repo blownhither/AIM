@@ -13,8 +13,8 @@
 // #define NEXT_BLOCK(x) (void *)(&(x).start + (x).size)
 #define BLOCK_SIZE 0x8
 #define BLOCK_MASK (BLOCK_SIZE - 1)
-#define BLOCK_ROUNDUP(x) (((x) + BLOCK_SIZE - 1) & BLOCK_MASK)
-#define EARLY_BUF_SIZE (1<<12)
+#define BLOCK_ROUNDUP(x) (((x) + BLOCK_SIZE - 1) & ~BLOCK_MASK)
+#define EARLY_BUF_SIZE (2<<12)
     
 #define MZY_DEBUG    
     
@@ -68,10 +68,10 @@ void master_early_simple_alloc() {
     // temp_simple_allocator.alloc = early_simple_alloc;
     
     set_simple_allocator(&temp_simple_allocator);
-    
+
     // TODO: upper bound?
     page_alloc_init(premap_addr(&__end), premap_addr(KERN_BASE + PHYSTOP));
     
-    sleep1();
+    // sleep1();
 }
 

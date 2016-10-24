@@ -10,7 +10,6 @@
 #include <libc/string.h>
 #include <aim/vmm.h>
 #include <aim/panic.h>
-#include <list.h>
 
 /* Designed for allocate consecutive pages */
 
@@ -30,10 +29,10 @@ bitmap *page_map[NLEVEL];
 // Free page pool
 struct page_node {
     addr_t paddr;
-    struct list_head head;
+    struct page_node *pre;
+    struct page_node *next;
 };
 static struct page_node pool[NLEVEL];
-#define HEAD2NODE(x) (list_entry(x, struct page_node, head))
 
 // Statistics
 static uint64_t global_empty_pages = 0;
@@ -76,6 +75,8 @@ static struct page_node *new_page_node() {
         memset(temp, 0, sizeof(struct page_node));
     else
         panic("new_page_node fail to alloc");
+    temp->pre = temp;
+    temp->next = temp;
     return temp;
 }
 
@@ -83,49 +84,64 @@ static void delete_page_node(struct page_node *node) {
     kfree(node);
 } 
 
+static void list_add(struct page_node *new, struct page_node *head) {
+    new->next = head->next;
+    new->pre = head;
+    head->next->pre = new;
+    head->next = new;
+} 
+
+static void list_del(struct page_node *head) {
+    head->pre->next = head->next;
+    head->next->pre = head->pre;
+}
+
+static bool list_empty(struct page_node *head) {
+    return head->next == head;
+}
+
 static struct page_node *add_pool(int order, addr_t paddr) {
 
     struct page_node *temp = new_page_node();
-    temp->paddr = paddr;
-    list_init(&temp->head);
 
-    list_add(&temp->head, &pool[order].head);
+    temp->paddr = paddr;
+    list_add(temp, &pool[order]);
     return temp;
 }
 
 static addr_t from_pool(int order) {
     addr_t ret;
-    if(list_empty(&pool[order].head)) {
+    if(list_empty(&pool[order])) {
         return EOF;
     }
     else {
-        struct page_node *temp = HEAD2NODE(pool[order].head.next);
+        struct page_node *temp = pool[order].next;
         ret = temp->paddr; // head should not be used
-        list_del(&temp->head);
+        list_del(temp);
         delete_page_node(temp);
     }
     return ret;
 }
 
 static struct page_node *search_pool(int order, addr_t paddr) {
-    struct list_head *p, *head = &pool[order].head;
-    struct page_node *temp;
+    struct page_node *p = pool[order].next;
     bool found = false;
-    for_each(p, head) {
-        temp = HEAD2NODE(p);
-        if(temp->paddr == paddr) {
+
+    for(; p->next!=p; p=p->next) {
+        if(p->paddr == paddr) {
             found = true;
             break;
         }
     }
     if(found) 
-        return temp;
+        return p;
     else 
         return NULL;
 }
 
-static void delete_list_node(struct list_head* head) {
-    list_del(head);
+static void remove_node(struct page_node *node) {
+    list_del(node);
+    delete_page_node(node);
 }
 
 /*************** Inner Util Functions ***************************/
@@ -140,7 +156,9 @@ static addr_t page_init_range(addr_t start, addr_t end, uint8_t order) {
         add_pool(order, start);
         start += size;
     }
+
     return start;   // start less than or equal to end
+
 }
 
 static addr_t split_page_node(int order) {
@@ -200,7 +218,8 @@ static uint32_t merge_page_node(int order, addr_t paddr) {
                 panic("merge_page_node: Illegal status missing pool node");
             }
 
-            delete_list_node(&node->head);
+            remove_node(node);
+
             switch_map_bitcount(order, BIT_COUNT(order, paddr));
 
             // prepare for next loop
@@ -220,9 +239,11 @@ static uint32_t merge_page_node(int order, addr_t paddr) {
 // Manage PADDR
 void page_alloc_init(addr_t start, addr_t end) {
     // Initialize
+
     for(int i=0; i<NLEVEL; ++i) {
         pool[i].paddr = EOF;
-        list_init(&pool[i].head);
+        pool[i].pre = &pool[i];
+        pool[i].next = &pool[i];
     }
     
     // Round addr conservatively

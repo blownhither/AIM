@@ -44,10 +44,6 @@ void set_page_allocator(struct page_allocator *allocator)
 	memcpy(&__allocator, allocator, sizeof(*allocator));
 }
 
-void *pa2kva(addr_t paddr) {
-	//TODO: implement
-}
-
 void pmemset(addr_t paddr, unsigned char b, lsize_t size)
 {
 	for (; size > 0; size -= PAGE_SIZE, paddr += PAGE_SIZE)

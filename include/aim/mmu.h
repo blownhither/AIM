@@ -33,12 +33,6 @@
 
 #ifndef __ASSEMBLER__
 
-// Note: Kern Base is 0x80000000
-
-//TODO: check
-#define __premap_addr(a) ((a) - KERN_BASE)
-#define __postmap_addr(a) ((a) + KERN_BASE)
-
 /* premap_addr: always returns low address.
  * The function which assumes that the argument is a high address
  * becomes __premap_addr(). */

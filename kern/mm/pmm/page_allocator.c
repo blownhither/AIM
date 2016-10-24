@@ -13,7 +13,7 @@
 
 /* Designed for allocate consecutive pages */
 
-// 32M block at most
+// 4M block at most
 #define NLEVEL 11
 #define MAX_BLOCK ((PGSIZE)<<((NLEVEL) - 1))
 #define PAGE_FRAME(x) ((x)>>12)
@@ -22,7 +22,7 @@
 
 // Bitmap
 typedef uint8_t bitmap;     // uint8_t[ 7 ~ 0 ]
-bitmap *page_map[NLEVEL];
+static bitmap *page_map[NLEVEL];
 // static int ntop_level_pages = 0;
 #define MAP_SIZE(x) ((x + 7)>>3)
 
@@ -245,7 +245,7 @@ void page_alloc_init(addr_t start, addr_t end) {
         pool[i].pre = &pool[i];
         pool[i].next = &pool[i];
     }
-    
+
     // Round addr conservatively
     start = PGROUNDUP(start);
     end = PGROUNDDOWN(end);
@@ -253,7 +253,17 @@ void page_alloc_init(addr_t start, addr_t end) {
     end = page_init_range(start, end, NLEVEL - 1); 
 
     global_empty_pages = (end - start) / PGSIZE;
-    // Free every page
+    
+    void *early_simple_alloc(size_t size, gfp_t flags);
+
+    bitmap *space = early_simple_alloc(global_empty_pages >> 3, GFP_ZERO);
+    int temp = global_empty_pages>>4;   // 0 order map size
+    
+    for(int i=0; i<NLEVEL - 1; ++i) {
+        page_map[i] = space;
+        space += temp;
+        temp >>= 1;
+    }
 }
 
 int bundle_pages_alloc(struct pages *pages) {

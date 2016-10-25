@@ -127,10 +127,10 @@ static addr_t from_pool(int order) {
 static struct page_node *search_pool(int order, addr_t paddr) {
     struct page_node *p = &pool[order];
     bool found = false;
-    kprintf("\nsearch_pool: looking for %p\n", paddr);
+    // kprintf("\nsearch_pool: looking for %p\n", paddr);
     do {
         p = p->next;
-        kprintf("%p ", p->paddr);
+        // kprintf("%p ", p->paddr);
         if(p->paddr == paddr) {
             found = true;
             break;
@@ -225,10 +225,10 @@ static uint32_t merge_page_node(int order, addr_t paddr) {
             p1 = BLOCK_ALIGN(order + 1, paddr); // plus one to get left sib
             p2 = p1 + (PGSIZE << order);    // right sib
             
-            kprintf("merge_page_node: order is %d\n", order);
-            kprintf("merge_page_node: paddr=0x%p ", paddr);
-            kprintf("p1=%p", p1);
-            kprintf("p2=%p\n", p2);
+            // kprintf("merge_page_node: order is %d\n", order);
+            // kprintf("merge_page_node: paddr=0x%p ", paddr);
+            // kprintf("p1=%p", p1);
+            // kprintf("p2=%p\n", p2);
 
             if(p1 == paddr) 
                 node = search_pool(order, p2);
@@ -256,6 +256,8 @@ static uint32_t merge_page_node(int order, addr_t paddr) {
             break;
         } 
     }
+    add_pool(order, paddr);
+    kprintf("merge_page_node: add pool %llx(%d)", paddr, order);
     return (1 << order);
 }
 
@@ -322,7 +324,7 @@ int bundle_pages_alloc(struct pages *pages) {
     pages->paddr = paddr;
     global_empty_pages -= npages;
 
-    kprintf("get paddr %p\n", pages->paddr);
+    // kprintf("get paddr %p\n", pages->paddr);
     return 0;
 }
 

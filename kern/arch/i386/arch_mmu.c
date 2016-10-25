@@ -41,21 +41,23 @@ static int set_early_pages_perm(pgindex_t *boot_page_index, void *va,
 }
 */
 
+/*
 static void page_early_clear_user(pgindex_t *i) {
     uint32_t n = KERN_BASE / (4<<20);   // 4M page 
     memset(i, 0, n << 2);   
 }
-
+*/
 // Set up linear mapping for early mapping
 void early_mm_init(void) {
     // extern uint32_t __bss_end_kern;
-    
-    // user space usage not allowed, only kernel is mapped
+
     page_index_early_map(entrypgdir, (addr_t)0, 
         (void *)KERN_BASE, PHYSTOP);
+    page_index_early_map(entrypgdir, (addr_t)0, 
+        (void *)0, PHYSTOP);
 
-    // invalidate low addr pages (user space)
-    page_early_clear_user(entrypgdir);
+    // (don't) invalidate low addr pages (user space)
+    // page_early_clear_user(entrypgdir);
 }
 
 /***************************************************************/

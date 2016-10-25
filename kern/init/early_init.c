@@ -110,12 +110,23 @@ panic:
     
 }
 
-void master_early_simple_alloc();
+void master_early_simple_alloc(void *start, void *end);
+void get_early_end();
+void page_alloc_init(addr_t start, addr_t end);
 
+extern addr_t *__early_buf_end;
 void master_early_continue() {
-
-    master_early_simple_alloc();
+	// using [__end, +EARLY_BUF)
+    master_early_simple_alloc(
+    	(void *)premap_addr((uint32_t)&__end), 
+    	(void *)premap_addr(&__early_buf_end)
+    );
     
+    page_alloc_init(
+    	premap_addr(&__early_buf_end), 
+    	premap_addr(KERN_BASE + PHYSTOP)
+    );
+
     sleep1();
 
 }

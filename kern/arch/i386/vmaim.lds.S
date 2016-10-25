@@ -79,6 +79,9 @@ SECTIONS
     . = ALIGN(4096);
 	.end = .;
 	PROVIDE(__end = .);
+
+	. += (4096 * 8);
+	PROVIDE(__early_buf_end = .);
 	
 }
 

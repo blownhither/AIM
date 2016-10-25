@@ -38,6 +38,8 @@
 
 #ifndef __ASSEMBLER__
 
+
+
 /* currently ignored */
 
 struct simple_allocator {

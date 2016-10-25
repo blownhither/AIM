@@ -14,7 +14,7 @@
 #define BLOCK_SIZE 0x8
 #define BLOCK_MASK (BLOCK_SIZE - 1)
 #define BLOCK_ROUNDUP(x) (((x) + BLOCK_SIZE - 1) & ~BLOCK_MASK)
-#define EARLY_BUF_SIZE (2<<12)
+//#define EARLY_BUF_SIZE (4<<12)
     
 #define MZY_DEBUG    
     
@@ -54,24 +54,28 @@ void *early_simple_alloc(size_t size, gfp_t flags) {
 
 void sleep1();
 void page_alloc_init(addr_t start, addr_t end);
+static void __simple_free(void *obj) {}
+static size_t __simple_size(void *obj) { return 0; }
 
 static struct simple_allocator temp_simple_allocator = {
 	.alloc	= early_simple_alloc,
-	.free	= NULL,
-    .size	= NULL
+	.free	= __simple_free,
+    .size	= __simple_size
 };
 
-void master_early_simple_alloc() {
-    static uint8_t buf[EARLY_BUF_SIZE];
-    
-    early_simple_init(&temp_eh, (void *)buf, EARLY_BUF_SIZE);
+
+void master_early_simple_alloc(void *start, void *end) {
+    //static uint8_t buf[EARLY_BUF_SIZE];
+
+    // using early_buf (__end, __early_buf_top)
+    early_simple_init(&temp_eh, start, end-start);
     // temp_simple_allocator.alloc = early_simple_alloc;
     
     set_simple_allocator(&temp_simple_allocator);
+}
 
-    // TODO: upper bound?
-    page_alloc_init(premap_addr(&__end), premap_addr(KERN_BASE + PHYSTOP));
-    
-    // sleep1();
+// when finish with early, note that [__end, get_early_end()] is used by simple
+void *get_early_end() {
+    return temp_eh.start;
 }
 

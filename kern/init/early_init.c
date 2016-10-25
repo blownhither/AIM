@@ -65,7 +65,7 @@ void get_mem_config() {
 	// uint32_t n = (*(void **)ARD_COUNT_ADDR - (void *)ARD_ENTRY_ADDR) / sizeof(ARD);
 	ARD *entry = (ARD *)ARD_ENTRY_ADDR;
 	kprintf("Selected address range descriptor is :\n");
-	kprintf("[%x%x, +%x%x], %x\n", 
+	kprintf("\t[%x%x, +%x%x], %x\n", 
 		(uint32_t)entry[ARD_ENTRY_TARGET].base & 0xffffffff,
 		(uint32_t)(entry[ARD_ENTRY_TARGET].base >> 32),
 		(uint32_t)entry[ARD_ENTRY_TARGET].length & 0xffffffff,
@@ -121,12 +121,23 @@ void master_early_continue() {
     	(void *)premap_addr((uint32_t)&__end), 
     	(void *)premap_addr(&__early_buf_end)
     );
+    kprintf("early simple allocator using [0x%p, 0x%p)\n", 
+    	(void *)premap_addr((uint32_t)&__end),
+    	(void *)premap_addr(&__early_buf_end)
+    );
     
-    page_alloc_init(
-    	premap_addr(&__early_buf_end), 
-    	premap_addr(KERN_BASE + PHYSTOP)
+    addr_t p_start = premap_addr(&__early_buf_end);
+    if(__addr_base > p_start)
+    	p_start = __addr_base;
+    addr_t p_end = premap_addr(KERN_BASE + PHYSTOP);
+    if(__addr_length + __addr_base < p_end)
+    	p_end = __addr_length + __addr_base;
+    page_alloc_init(p_start, p_end);
+    kprintf("page allocator using [0x%p, 0x%p)\n", 
+    	(void *)(uint32_t)p_start, (void *)(uint32_t)p_end
     );
 
+    
     sleep1();
 
 }

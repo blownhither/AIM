@@ -7,6 +7,7 @@
 #include <aim/vmm.h>
 #include <aim/panic.h>
 #include <aim/mmu.h>
+#include <aim/console.h>
 
 /* This file is for simple allocator */
 
@@ -69,6 +70,7 @@ void master_early_simple_alloc(void *start, void *end) {
 
     // using early_buf (__end, __early_buf_top)
     early_simple_init(&temp_eh, start, end-start);
+    
     // temp_simple_allocator.alloc = early_simple_alloc;
     
     set_simple_allocator(&temp_simple_allocator);

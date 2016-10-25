@@ -112,3 +112,8 @@ addr_t get_free_memory(void)
 	return __allocator.get_free();
 }
 
+void master_later_alloc();
+int page_allocator_move(struct simple_allocator *old) {
+	master_later_alloc();
+	return 0;
+}

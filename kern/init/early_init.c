@@ -118,6 +118,7 @@ void page_alloc_init(addr_t start, addr_t end);
 void master_later_alloc();
 
 extern addr_t *__early_buf_end;
+void master_early_simple_alloc(void *start, void *end);
 int page_allocator_init() {
 	addr_t p_start = premap_addr(&__early_buf_end);
     if(__addr_base > p_start)
@@ -147,24 +148,19 @@ void master_early_continue() {
 
 	page_allocator_init();
 
-
-
-
     kprintf("3. later simple allocator depends on page allocator\n");
     master_later_alloc();
 
     addr_t temp_addr;
-    void  *p;
-    p = kmalloc(8, 0);
-    kfree(p);
-    kprintf("Test: alloc page 0x%p and is freed\n", p);
+    // void  *p;
     temp_addr = pgalloc();
-    pgfree(temp_addr);
-    kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
+    //pgfree(temp_addr);
+    kprintf("Test: alloc page 0x%p and is not freed\n", temp_addr);
     temp_addr = pgalloc();
     pgfree(temp_addr);
     kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
     
+
     panic("Test done!");
 
     sleep1();

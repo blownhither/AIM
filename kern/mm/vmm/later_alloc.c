@@ -9,45 +9,22 @@
 #include <aim/panic.h>
 #include <aim/mmu.h>
 #include <aim/pmm.h>
+#include <aim/vmm.h>
 #include <aim/console.h>
 #include <asm.h>
 
 #define printk kprintf
-
 #define GFP_LEVEL_MASK 0xf
-
-/* I want this low enough for a while to catch errors.
-   I want this number to be increased in the near future:
-   loadable device drivers should use this function to get memory */
-
 #define MAX_KMALLOC_K ((PAGE_SIZE<<(NUM_AREA_ORDERS-1))>>10)
-
-
-/* This defines how many times we should try to allocate a free page before
-   giving up. Normally this shouldn't happen at all. */
 #define MAX_GET_FREE_PAGE_TRIES 4
-
-
-/* Private flags. */
 
 #define MF_USED 0xffaa0055
 #define MF_FREE 0x0055ffaa
 
-
-/* 
- * Much care has gone into making these routines in this file reentrant.
- *
- * The fancy bookkeeping of nbytesmalloced and the like are only used to
- * report them to the user (oooohhhhh, aaaaahhhhh....) are not 
- * protected by cli(). (If that goes wrong. So what?)
- *
- * These routines restore the interrupt status to allow calling with ints
- * off. 
- */
-
 /* 
  * A block header. This is in front of every malloc-block, whether free or not.
  */
+ // _length is the occupied size, _next used when block is free
 struct block_header {
     unsigned long bh_flags;
     union {
@@ -56,15 +33,14 @@ struct block_header {
     } vp;
 };
 
-
 #define bh_length vp.ubh_length
 #define bh_next   vp.fbh_next
 #define BH(p) ((struct block_header *)(p))
 
-
 /* 
  * The page descriptor is at the front of every page that malloc has in use. 
  */
+ // .order is for block size, while nfree is num of free block
 struct page_descriptor {
     struct page_descriptor *next;
     struct block_header *firstfree;
@@ -72,9 +48,7 @@ struct page_descriptor {
     int nfree;
 };
 
-
 #define PAGE_DESC(p) ((struct page_descriptor *)(((unsigned long)(p)) & PAGE_MASK))
-
 
 /*
  * A size descriptor describes a specific class of malloc sizes.
@@ -87,17 +61,13 @@ struct size_descriptor {
     int nblocks;
 
     int nmallocs;
-    int nfrees;
+    int nfrees;         // nfrees * size = freeBytes
     int nbytesmalloced;
     int npages;
     unsigned long gfporder; /* number of pages in the area required */
 };
 
-/*
- * For now it is unsafe to allocate bucket sizes between n & n=16 where n is
- * 4096 * any power of two
- */
-
+// bucket
 struct size_descriptor sizes[] = { 
     { NULL, NULL,  32,127, 0,0,0,0, 0},
     { NULL, NULL,  64, 63, 0,0,0,0, 0 },
@@ -115,34 +85,29 @@ struct size_descriptor sizes[] = {
     { NULL, NULL,   0,  0, 0,0,0,0, 0 }
 };
 
-
 #define NBLOCKS(order)          (sizes[order].nblocks)
 #define BLOCKSIZE(order)        (sizes[order].size)
 #define AREASIZE(order)		(PAGE_SIZE<<(sizes[order].gfporder))
 #define PAGE_MASK           (~(PGSIZE-1))
 
-long kmalloc_init (long start_mem,long end_mem)
+long later_alloc_init ()
 {
     int order;
 
-    /* 
-     * Check the static info array. Things will blow up terribly if it's
-     * incorrect. This is a late "compile time" check.....
-     */
     for (order = 0;BLOCKSIZE(order);order++)
     {
         if ((NBLOCKS (order)*BLOCKSIZE(order) + sizeof (struct page_descriptor)) >
                 AREASIZE(order)) 
         {
             printk ("Cannot use %d bytes out of %d in order = %d block mallocs\n",
-                    NBLOCKS (order) * BLOCKSIZE(order) + 
-                    sizeof (struct page_descriptor),
-                    (int) AREASIZE(order),
-                    BLOCKSIZE (order));
+                NBLOCKS (order) * BLOCKSIZE(order) + 
+                sizeof (struct page_descriptor),
+                (int) AREASIZE(order),
+                BLOCKSIZE (order));
             panic ("This only happens if someone messes with kmalloc");
         }
     }
-    return start_mem;
+    return 0;
 }
 
 int get_order (int size)
@@ -150,15 +115,15 @@ int get_order (int size)
     int order;
 
     /* Add the size of the header */
-    size += sizeof (struct block_header); 
-    for (order = 0;BLOCKSIZE(order);order++)
+    size += sizeof(struct block_header); 
+    for (order = 0; BLOCKSIZE(order); order++)
         if (size <= BLOCKSIZE (order))
             return order; 
     return -1;
 }
 
 
-void *kmalloc (size_t size, int priority)
+void *later_kmalloc (size_t size, int priority)
 {
     unsigned long flags;
     int order,tries,i,sz;
@@ -299,7 +264,7 @@ void *kmalloc (size_t size, int priority)
 }
 
 
-void kfree_s (void *ptr,int size)
+void later_kfree (void *ptr,int size)
 {
     unsigned long flags;
     int order;
@@ -393,4 +358,34 @@ void kfree_s (void *ptr,int size)
      */
     sizes[order].nfrees++;      /* Noncritical (monitoring) admin stuff */
     sizes[order].nbytesmalloced -= size;
+}
+
+size_t bundle_simple_size(void *paddr) {
+    // use block header to get size
+    struct block_header *p = (struct block_header *)paddr - 1;
+    return p->bh_length;
+}
+
+void *bundle_kmalloc(size_t size, gfp_t flags) {
+    void *ret = later_kmalloc(size, 0);
+    if(flags & GFP_ZERO) {
+        //TODO: memset
+    }
+    return ret;
+}
+
+void bundle_kfree(void *paddr) {
+    later_kfree(paddr, bundle_simple_size(paddr));
+}
+
+
+static struct simple_allocator later_simple_allocator = {
+    .alloc  = bundle_kmalloc,
+    .free   = bundle_kfree,
+    .size   = bundle_simple_size
+};
+
+void master_later_alloc() {
+    later_alloc_init();
+    set_simple_allocator(&later_simple_allocator);
 }

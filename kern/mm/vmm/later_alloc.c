@@ -21,6 +21,8 @@
 #define MF_USED 0xffaa0055
 #define MF_FREE 0x0055ffaa
 
+#define MZYDEBUG
+
 /* 
  * A block header. This is in front of every malloc-block, whether free or not.
  */
@@ -213,7 +215,7 @@ void *later_kmalloc (size_t size, int priority)
               }*/
             return NULL;
         }
-#if 0
+#ifdef MZYDEBUG
         printk ("Got page %08x to use for %d byte mallocs....",(long)page,sz);
 #endif
         sizes[order].npages++;
@@ -231,7 +233,7 @@ void *later_kmalloc (size_t size, int priority)
         page->order = order;
         page->nfree = NBLOCKS(order); 
         page->firstfree = BH(page+1);
-#if 0
+#ifdef MZYDEBUG
         printk ("%d blocks per page\n",page->nfree);
 #endif
         /* Now we're going to muck with the "global" freelist for this size:
@@ -317,7 +319,7 @@ void later_kfree (void *ptr,int size)
     /* If page is completely free, free it */
     if (page->nfree == NBLOCKS (page->order))
     {
-#if 0
+#ifdef MZYDEBUG
         printk ("Freeing page %08x.\n", (long)page);
 #endif
         if (sizes[order].firstfree == page)
@@ -332,23 +334,22 @@ void later_kfree (void *ptr,int size)
         {
             for (pg2=sizes[order].firstfree;
                     (pg2 != NULL) && (pg2->next != page);
-                    pg2=pg2->next)
+                    pg2=pg2->next
+            )
                 /* Nothing */;
             if (!pg2)
                 for (pg2=sizes[order].dmafree;
                         (pg2 != NULL) && (pg2->next != page);
-                        pg2=pg2->next)
-                    /* Nothing */;
+                        pg2=pg2->next
+            )
+                 /* Nothing */;
             if (pg2 != NULL)
                 pg2->next = page->next;
             else
                 printk ("Ooops. page %p doesn't show on freelist.\n", page);
         }
         /* FIXME: I'm sure we should do something with npages here (like npages--) */
-        struct pages temp_pages = {
-            (uint32_t)page, sizes[order].gfporder, 0
-        };
-        free_pages (&temp_pages);
+        pgfree((addr_t)(uint32_t)page);
     }
     restore_flags(flags);
 

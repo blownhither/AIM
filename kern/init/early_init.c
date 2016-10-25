@@ -139,8 +139,9 @@ void master_early_continue() {
     	(void *)(uint32_t)p_start, (void *)(uint32_t)p_end
     );
 
+    addr_t temp_addr;
     //test
-    // addr_t temp_addr = pgalloc();
+    // temp_addr = pgalloc();
     // kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
     // // pgfree(temp_addr);
     // temp_addr = pgalloc();

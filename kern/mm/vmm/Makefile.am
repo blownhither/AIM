@@ -21,7 +21,8 @@ noinst_LTLIBRARIES = libvmm.la
 noinst_DATA =
 
 SRCS = vmm.c \
-    early_alloc.c
+    early_alloc.c \
+    later_alloc.c
 
 libvmm_la_SOURCES = $(SRCS)
 

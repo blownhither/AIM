@@ -51,6 +51,13 @@ seta20.2:
     movb    $0xdf, %al
     outb    %al, $0x60
 
+    push    %ebp
+    // call    memory_detection
+    pop     %ebp
+    call    protected_mode  // no return
+
+protected_mode:
+
     lgdt    gdtdesc     // load global descrptor table
     movl    %cr0, %eax  // switch to protected mode
     orl     $CR0_PE, %eax

@@ -53,6 +53,10 @@ void *early_simple_alloc(size_t size, gfp_t flags) {
     return ret;
 }
 
+void early_simple_free(void *obj) {
+    // TODO:
+}
+
 void sleep1();
 void page_alloc_init(addr_t start, addr_t end);
 static void __simple_free(void *obj) {}

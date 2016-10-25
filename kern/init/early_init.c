@@ -29,6 +29,7 @@
 #include <aim/panic.h>
 #include <aim/kalloc.h>
 #include <aim/pmm.h>
+#include <aim/vmm.h>
 #include <drivers/io/io-mem.h>
 #include <drivers/io/io-port.h>
 #include <platform.h>
@@ -123,7 +124,7 @@ void master_early_continue() {
     	(void *)premap_addr((uint32_t)&__end), 
     	(void *)premap_addr(&__early_buf_end)
     );
-    kprintf("early simple allocator using [0x%p, 0x%p)\n", 
+    kprintf("1. early simple allocator using [0x%p, 0x%p)\n", 
     	(void *)premap_addr((uint32_t)&__end),
     	(void *)premap_addr(&__early_buf_end)
     );
@@ -135,7 +136,7 @@ void master_early_continue() {
     if(__addr_length + __addr_base < p_end)
     	p_end = __addr_length + __addr_base;
     page_alloc_init(p_start, p_end);
-    kprintf("page allocator using [0x%p, 0x%p)\n", 
+    kprintf("2. page allocator using [0x%p, 0x%p)\n", 
     	(void *)(uint32_t)p_start, (void *)(uint32_t)p_end
     );
 
@@ -151,12 +152,15 @@ void master_early_continue() {
     // kprintf("Test: alloc page 0x%p\n", temp_addr);
     // pgfree(temp_addr);
 
-    kprintf("later simple allocator depends on page allocator\n");
+    kprintf("3. later simple allocator depends on page allocator\n");
     master_later_alloc();
 
+    // temp_addr = pgalloc();
+    void  *p;
+    p = kmalloc(8, 0);
     temp_addr = pgalloc();
-    kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
-    pgfree(temp_addr);
+    kprintf("Test: alloc page 0x%p and is freed\n", p);
+    // pgfree(temp_addr);
 
     sleep1();
 

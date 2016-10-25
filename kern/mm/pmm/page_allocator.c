@@ -69,9 +69,11 @@ static void set_map_bitcount(int order, int bitcount, uint8_t bit) {
         | (bit << (bitcount & 0x7));
 }
 
+void *early_simple_alloc(size_t size, gfp_t flags) ;
+void early_simple_free(void *obj) ;
 static struct page_node *new_page_node() {
     struct page_node *temp = 
-        (struct page_node *)kmalloc(sizeof(struct page_node), GFP_ZERO);
+        (struct page_node *)early_simple_alloc(sizeof(struct page_node), GFP_ZERO);
     if(temp != NULL)
         memset(temp, 0, sizeof(struct page_node));
     else
@@ -82,7 +84,7 @@ static struct page_node *new_page_node() {
 }
 
 static void delete_page_node(struct page_node *node) {
-    kfree(node);
+    early_simple_free(node);
 } 
 
 static void list_add(struct page_node *new, struct page_node *head) {

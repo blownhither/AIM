@@ -164,9 +164,9 @@ void *later_kmalloc (size_t size, int priority)
     while (tries --)
     {
         /* Try to allocate a "recently" freed memory block */
-        cli ();
+        // cli ();
         if ((page = (dma_flag ? sizes[order].dmafree : sizes[order].firstfree)) &&
-                (p    =  page->firstfree))
+                (p = page->firstfree))
         {
             if (p->bh_flags == MF_FREE)
             {
@@ -238,7 +238,7 @@ void *later_kmalloc (size_t size, int priority)
 #endif
         /* Now we're going to muck with the "global" freelist for this size:
            this should be uninterruptible */
-        cli ();
+        // cli ();
         /* 
          * sizes[order].firstfree used to be NULL, otherwise we wouldn't be
          * here, but you never know.... 
@@ -264,7 +264,6 @@ void *later_kmalloc (size_t size, int priority)
             size);
     return NULL;
 }
-
 
 void later_kfree (void *ptr,int size)
 {
@@ -297,7 +296,7 @@ void later_kfree (void *ptr,int size)
     size = p->bh_length;
     p->bh_flags = MF_FREE; /* As of now this block is officially free */
     save_flags(flags);
-    cli();
+    // cli();
     p->bh_next = page->firstfree;
     page->firstfree = p;
     page->nfree ++;

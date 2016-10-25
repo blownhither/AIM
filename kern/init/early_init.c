@@ -159,8 +159,11 @@ void master_early_continue() {
     void  *p;
     p = kmalloc(8, 0);
     temp_addr = pgalloc();
+    temp_addr = pgalloc();
+    temp_addr = pgalloc();
     kprintf("Test: alloc page 0x%p and is freed\n", p);
     // pgfree(temp_addr);
+    panic("Test done!");
 
     sleep1();
 

@@ -21,7 +21,7 @@
 #define MF_USED 0xffaa0055
 #define MF_FREE 0x0055ffaa
 
-#define MZYDEBUG
+// #define MZYDEBUG
 
 /* 
  * A block header. This is in front of every malloc-block, whether free or not.
@@ -137,18 +137,6 @@ void *later_kmalloc (size_t size, int priority)
     dma_flag = 0;
     // priority &= GFP_LEVEL_MASK;
 
-    /* Sanity check... */
-    /*
-       if (intr_count && priority != GFP_ATOMIC) {
-       static int count = 0;
-       if (++count < 5) {
-       printk("kmalloc called nonatomically from interrupt %p\n",
-       __builtin_return_address(0));
-       priority = GFP_ATOMIC;
-       }
-       }
-       */
-
     order = get_order (size);
     if (order < 0) {
         panic("kmalloc of too large a block");
@@ -190,9 +178,6 @@ void *later_kmalloc (size_t size, int priority)
             return (NULL);
         }
         restore_flags(flags);
-
-
-        /* Now we're in trouble: We need to get a new free page..... */
 
         sz = BLOCKSIZE(order); /* sz is the size of the blocks we're dealing with */
 

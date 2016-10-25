@@ -114,6 +114,7 @@ panic:
 void master_early_simple_alloc(void *start, void *end);
 void get_early_end();
 void page_alloc_init(addr_t start, addr_t end);
+void master_later_alloc();
 
 extern addr_t *__early_buf_end;
 void master_early_continue() {
@@ -139,15 +140,23 @@ void master_early_continue() {
     );
 
     //test
-    addr_t temp_addr = pgalloc();
-    kprintf("\nTest: alloc page 0x%p\n", temp_addr);
-    pgfree(temp_addr);
+    // addr_t temp_addr = pgalloc();
+    // kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
+    // // pgfree(temp_addr);
+    // temp_addr = pgalloc();
+    // kprintf("Test: alloc page 0x%p\n", temp_addr);
+    // // pgfree(temp_addr);
+    // temp_addr = pgalloc();
+    // kprintf("Test: alloc page 0x%p\n", temp_addr);
+    // pgfree(temp_addr);
+
+    kprintf("later simple allocator depends on page allocator\n");
+    master_later_alloc();
+
     temp_addr = pgalloc();
-    kprintf("\nTest: alloc page 0x%p\n", temp_addr);
+    kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
     pgfree(temp_addr);
-    temp_addr = pgalloc();
-    kprintf("\nTest: alloc page 0x%p\n", temp_addr);
-    pgfree(temp_addr);
+
     sleep1();
 
 }

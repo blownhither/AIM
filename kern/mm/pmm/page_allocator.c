@@ -259,7 +259,7 @@ static uint32_t merge_page_node(int order, addr_t paddr) {
         } 
     }
     add_pool(order, paddr);
-    kprintf("merge_page_node: add pool %llx(%d)", paddr, order);
+    // kprintf("merge_page_node: add pool %llx(%d)", paddr, order);
     return (1 << order);
 }
 

@@ -32,16 +32,17 @@
  /*
 static int __alloc(struct pages *pages) { return EOF; }
 static void __free(struct pages *pages) {}
-*/
 static addr_t __get_free(void) { return 0; }
+*/
 
 int bundle_pages_alloc(struct pages *pages);
 void bundle_pages_free(struct pages *pages);
+addr_t bundle_pages_size();
 
 static struct page_allocator __allocator = {
 	.alloc		= bundle_pages_alloc,
 	.free		= bundle_pages_free,
-	.get_free	= __get_free
+	.get_free	= bundle_pages_size
 };
 
 void set_page_allocator(struct page_allocator *allocator)

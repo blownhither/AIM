@@ -56,7 +56,7 @@ seta20.2:
 simple_detection:    
     xor     %ebx, %ebx      // Continuation
     mov     $0x9000, %di    // Pointer to buffer
-    mov     $0x18, %ecx    // Buffer size
+    mov     $0x18, %ecx     // Buffer size
 
 detec_loop:
     mov     $0xe820, %eax   // Function code

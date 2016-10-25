@@ -129,6 +129,7 @@ int page_allocator_init() {
     kprintf("2. page allocator using [0x%p, 0x%p)\n", 
     	(void *)(uint32_t)p_start, (void *)(uint32_t)p_end
     );
+    kprintf("\twith free space 0x%llx\n", get_free_memory());
     return 0;
 }
 
@@ -159,17 +160,8 @@ void master_early_continue() {
 
 	page_allocator_init();
 
+
     addr_t temp_addr;
-    //test
-    // temp_addr = pgalloc();
-    // kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
-    // // pgfree(temp_addr);
-    // temp_addr = pgalloc();
-    // kprintf("Test: alloc page 0x%p\n", temp_addr);
-    // // pgfree(temp_addr);
-    // temp_addr = pgalloc();
-    // kprintf("Test: alloc page 0x%p\n", temp_addr);
-    // pgfree(temp_addr);
 
     kprintf("3. later simple allocator depends on page allocator\n");
     master_later_alloc();

@@ -350,6 +350,10 @@ void bundle_pages_free(struct pages *pages) {
 
 }
 
+addr_t bundle_pages_size() {
+    return global_empty_pages * PGSIZE;
+}
+
 /*
 #define NODE_UNUSED 0x0
 #define NODE_USED   0x1

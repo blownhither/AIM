@@ -144,37 +144,27 @@ void master_early_continue() {
     	(void *)premap_addr((uint32_t)&__end),
     	(void *)premap_addr(&__early_buf_end)
     );
-    
-    /*
-    addr_t p_start = premap_addr(&__early_buf_end);
-    if(__addr_base > p_start)
-    	p_start = __addr_base;
-    addr_t p_end = premap_addr(KERN_BASE + PHYSTOP);
-    if(__addr_length + __addr_base < p_end)
-    	p_end = __addr_length + __addr_base;
-    page_alloc_init(p_start, p_end);
-    kprintf("2. page allocator using [0x%p, 0x%p)\n", 
-    	(void *)(uint32_t)p_start, (void *)(uint32_t)p_end
-    );
-	*/
 
 	page_allocator_init();
 
 
-    addr_t temp_addr;
+
 
     kprintf("3. later simple allocator depends on page allocator\n");
     master_later_alloc();
 
-    // temp_addr = pgalloc();
+    addr_t temp_addr;
     void  *p;
     p = kmalloc(8, 0);
-    temp_addr = pgalloc();
-    temp_addr = pgalloc();
-    temp_addr = pgalloc();
     kfree(p);
     kprintf("Test: alloc page 0x%p and is freed\n", p);
-    // pgfree(temp_addr);
+    temp_addr = pgalloc();
+    pgfree(temp_addr);
+    kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
+    temp_addr = pgalloc();
+    pgfree(temp_addr);
+    kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
+    
     panic("Test done!");
 
     sleep1();

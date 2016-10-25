@@ -80,7 +80,7 @@ SECTIONS
 	.end = .;
 	PROVIDE(__end = .);
 
-	. += (4096 * 8);
+	. += (4096 * 16);
 	PROVIDE(__early_buf_end = .);
 	
 }

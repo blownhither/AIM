@@ -50,9 +50,15 @@ static bool e_list_empty(struct early_list *head) {
     return head->next == head;
 }
 
+static struct early_list *e_list_get(struct early_list *head) {
+    struct early_list *ret = head->next;
+    e_list_del(ret);
+    return ret;
+}
+
 // continous stack space for early simple allocator
 void early_simple_init(struct early_header *eh, 
-    void *start, uint16_t size) 
+    void *start, uint32_t size) 
 {
     eh->start = eh->head = start;
     eh->size = size;
@@ -67,6 +73,11 @@ void early_simple_init(struct early_header *eh,
 }
 
 void *early_simple_alloc(size_t size, gfp_t flags) {
+    if(e_list_empty(&freelist))
+        return NULL;
+    temp_eh.size -= size;
+    return (void *)e_list_get( &freelist);
+    /*
     size = BLOCK_ROUNDUP(size);
     if(size > temp_eh.size || !temp_eh.initialized) {
         
@@ -79,22 +90,27 @@ void *early_simple_alloc(size_t size, gfp_t flags) {
     void *ret = temp_eh.start;
     temp_eh.size -= size;
     temp_eh.start += size;
+
     return ret;
+    */
 }
 
 void early_simple_free(void *obj) {
-    // TODO:
+    temp_eh.size += sizeof(struct early_list);
+    e_list_add(obj, &freelist);
+}
+
+static size_t sizeof_list(void *obj) {
+    return sizeof(struct early_list);
 }
 
 void sleep1();
 void page_alloc_init(addr_t start, addr_t end);
-static void __simple_free(void *obj) {}
-static size_t __simple_size(void *obj) { return 0; }
 
 static struct simple_allocator temp_simple_allocator = {
 	.alloc	= early_simple_alloc,
-	.free	= __simple_free,
-    .size	= __simple_size
+	.free	= early_simple_free,
+    .size	= sizeof_list
 };
 
 
@@ -102,7 +118,7 @@ void master_early_simple_alloc(void *start, void *end) {
     //static uint8_t buf[EARLY_BUF_SIZE];
 
     // using early_buf (__end, __early_buf_top)
-    early_simple_init(&temp_eh, start, end-start);
+    early_simple_init(&temp_eh, start, end - start);
     
     // temp_simple_allocator.alloc = early_simple_alloc;
     

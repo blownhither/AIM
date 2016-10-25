@@ -264,6 +264,7 @@ static uint32_t merge_page_node(int order, addr_t paddr) {
 }
 
 /*************** Interfaces and bundle parts ***************************/
+static uint8_t page_map_buf[10240];
 // Manage PADDR
 void page_alloc_init(addr_t start, addr_t end) {
     // Initialize
@@ -291,7 +292,8 @@ void page_alloc_init(addr_t start, addr_t end) {
     void *early_simple_alloc(size_t size, gfp_t flags);
 
     // 8 bit = 1 B, and 1 bit is shared by buddies
-    bitmap *space = early_simple_alloc(global_empty_pages >> 3, GFP_ZERO);
+    // bitmap *space = early_simple_alloc(global_empty_pages >> 3, GFP_ZERO);
+    bitmap *space = (bitmap *)page_map_buf;
     memset(space, 0, global_empty_pages >> 3);
     int temp = global_empty_pages>>4;   // 0 order map size
     

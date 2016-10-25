@@ -140,8 +140,8 @@ void master_early_continue() {
 
     //test
     addr_t temp_addr = pgalloc();
-    kprintf("\nTest: alloc page 0x%p", temp_addr);
-
+    kprintf("\nTest: alloc page 0x%p\n", temp_addr);
+    pgfree(temp_addr);
     sleep1();
 
 }

@@ -10,7 +10,7 @@
 #include <libc/string.h>
 #include <aim/vmm.h>
 #include <aim/panic.h>
-#include <aim/debug.h>
+#include <aim/console.h>
 
 /* Designed for allocate consecutive pages */
 
@@ -19,7 +19,7 @@
 #define MAX_BLOCK ((PGSIZE)<<((NLEVEL) - 1))
 #define PAGE_FRAME(x) ((x)>>12)
 #define BIT_COUNT(order, paddr) (PAGE_FRAME((paddr)) >> ((order)+1))
-#define BLOCK_ALIGN(order, paddr) ((paddr) & ~((PGSIZE<<(order)) - 1))
+#define BLOCK_ALIGN(order, paddr) ((paddr) & (~((PGSIZE<<(order)) - 1)))
 
 // Bitmap
 typedef uint8_t bitmap;     // uint8_t[ 7 ~ 0 ]
@@ -40,7 +40,7 @@ static uint64_t global_empty_pages = 0;
 
 /*************** Data structure interface ***************************/
 static uint8_t read_map_bitcount(int order, int bitcount) {
-    if(order >= NLEVEL || page_map[order] == NULL) { 
+    if(order >= NLEVEL - 1 || page_map[order] == NULL) { 
         panic("read_map illeagal status");
     }
     bitmap *map = page_map[order];
@@ -50,7 +50,7 @@ static uint8_t read_map_bitcount(int order, int bitcount) {
 }
 
 static void switch_map_bitcount(int order, int bitcount) {
-    if(order >= NLEVEL || page_map[order] == NULL) { 
+    if(order >= NLEVEL - 1 || page_map[order] == NULL) { 
         panic("read_map illeagal status");
     }
     bitmap *map = page_map[order];
@@ -59,13 +59,13 @@ static void switch_map_bitcount(int order, int bitcount) {
 }
 
 static void set_map_bitcount(int order, int bitcount, uint8_t bit) { 
-    if(order >= NLEVEL || page_map[order] == NULL) { 
+    if(order >= NLEVEL - 1 || page_map[order] == NULL) { 
         panic("read_map illeagal status");
     }
     bitmap *map = page_map[order];
     uint8_t mask = 1 << (bitcount & 0x7);
     bit &= 0x1;
-    map[bitcount >> 3] = (~mask | map[bitcount >> 3]) 
+    map[bitcount >> 3] = (~mask & map[bitcount >> 3]) 
         | (bit << (bitcount & 0x7));
 }
 
@@ -125,15 +125,26 @@ static addr_t from_pool(int order) {
 }
 
 static struct page_node *search_pool(int order, addr_t paddr) {
-    struct page_node *p = pool[order].next;
+    struct page_node *p = &pool[order];
     bool found = false;
-
+    kprintf("\nsearch_pool: looking for %p\n", paddr);
+    do {
+        p = p->next;
+        kprintf("%p ", p->paddr);
+        if(p->paddr == paddr) {
+            found = true;
+            break;
+        }
+    } while(p->next!=&pool[order]);
+/*
     for(; p->next!=&pool[order]; p=p->next) {
+        kprintf("%p ", p->paddr);
         if(p->paddr == paddr) {
             found = true;
             break;
         }
     }
+*/
     if(found) 
         return p;
     else 
@@ -170,15 +181,15 @@ static addr_t split_page_node(int order) {
     addr_t start;
     while(top < NLEVEL) {
         start = from_pool(top);
-        if(start == EOF)
+        if(start != EOF)
             break;
         top ++;
     }
-    kpdebug("split_page_node: top is %x\n", top);
+    // kprintf("split_page_node: top is %d\n", top);
     if(top >= NLEVEL || top == order) {
         return EOF;
     }
-
+    // kprintf("start is %p", start);
     // split from top to order (loop recursive)
     for(int i=top; i>order; --i) {
         // split order i to get (i-1)
@@ -187,13 +198,15 @@ static addr_t split_page_node(int order) {
         if(i != NLEVEL - 1)
             switch_map_bitcount(i, BIT_COUNT(i, start));
         // add left child in pool
-        add_pool(i-1, start);
+        add_pool(i-1, start + (PGSIZE<<(i-1)));
         // lower level is sure to be 1
         set_map_bitcount(i-1, BIT_COUNT(i-1, start), 0);
-        start = start + (PGSIZE<<order);
+
+        // kprintf("split %d for %d: switched %d\n", i, i-1, BIT_COUNT(i, start));
+        // kprintf("\tadd_pool(%x) set %d\n", start + (PGSIZE<<(i-1)), BIT_COUNT(i-1, start));
         
     }
-    
+    // kprintf("split_page_node return %p", start);
     return start;
 }
 
@@ -202,7 +215,8 @@ static uint32_t merge_page_node(int order, addr_t paddr) {
     uint8_t temp;
     struct page_node *node;
     addr_t p1, p2;
-    while(1){
+    // merge order to get order + 1
+    while(order < NLEVEL - 1){
         temp = read_map_bitcount(order, BIT_COUNT(order, paddr));
         if(temp) {
             // should merge
@@ -210,6 +224,12 @@ static uint32_t merge_page_node(int order, addr_t paddr) {
             
             p1 = BLOCK_ALIGN(order + 1, paddr); // plus one to get left sib
             p2 = p1 + (PGSIZE << order);    // right sib
+            
+            kprintf("merge_page_node: order is %d\n", order);
+            kprintf("merge_page_node: paddr=0x%p ", paddr);
+            kprintf("p1=%p", p1);
+            kprintf("p2=%p\n", p2);
+
             if(p1 == paddr) 
                 node = search_pool(order, p2);
             else if(p2 == paddr)
@@ -251,8 +271,14 @@ void page_alloc_init(addr_t start, addr_t end) {
     }
 
     // Round addr conservatively
-    start = PGROUNDUP(start);
-    end = PGROUNDDOWN(end);
+    // start = PGROUNDUP(start);
+    // end = PGROUNDDOWN(end);
+    #define ROUNDUP_4M(paddr) ((paddr + (1<<22) - 1) & ~((1<<22) - 1))
+    #define ROUNDDOWN_4M(paddr) ((paddr) & ~((1<<22) - 1))
+    start = ROUNDUP_4M(start);
+    end = ROUNDDOWN_4M(end);
+    #undef ROUNDUP_4M
+    #undef ROUNDDOWN_4M
 
     end = page_init_range(start, end, NLEVEL - 1); 
 
@@ -260,7 +286,9 @@ void page_alloc_init(addr_t start, addr_t end) {
     
     void *early_simple_alloc(size_t size, gfp_t flags);
 
+    // 8 bit = 1 B, and 1 bit is shared by buddies
     bitmap *space = early_simple_alloc(global_empty_pages >> 3, GFP_ZERO);
+    memset(space, 0, global_empty_pages >> 3);
     int temp = global_empty_pages>>4;   // 0 order map size
     
     for(int i=0; i<NLEVEL - 1; ++i) {
@@ -287,11 +315,15 @@ int bundle_pages_alloc(struct pages *pages) {
             return EOF;
         // split set bitmap 0
     }
+
+
     switch_map_bitcount(order, BIT_COUNT(order, paddr));
     
     pages->paddr = paddr;
     global_empty_pages -= npages;
-    return 1;
+
+    kprintf("get paddr %p\n", pages->paddr);
+    return 0;
 }
 
 void bundle_pages_free(struct pages *pages) {

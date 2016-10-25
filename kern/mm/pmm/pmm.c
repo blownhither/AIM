@@ -29,13 +29,18 @@
 #include <util.h>
 
 /* dummy implementations */
+ /*
 static int __alloc(struct pages *pages) { return EOF; }
 static void __free(struct pages *pages) {}
+*/
 static addr_t __get_free(void) { return 0; }
 
+int bundle_pages_alloc(struct pages *pages);
+void bundle_pages_free(struct pages *pages);
+
 static struct page_allocator __allocator = {
-	.alloc		= __alloc,
-	.free		= __free,
+	.alloc		= bundle_pages_alloc,
+	.free		= bundle_pages_free,
 	.get_free	= __get_free
 };
 

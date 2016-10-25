@@ -10,6 +10,7 @@
 #include <libc/string.h>
 #include <aim/vmm.h>
 #include <aim/panic.h>
+#include <aim/debug.h>
 
 /* Designed for allocate consecutive pages */
 
@@ -85,9 +86,9 @@ static void delete_page_node(struct page_node *node) {
 } 
 
 static void list_add(struct page_node *new, struct page_node *head) {
+    head->next->pre = new;
     new->next = head->next;
     new->pre = head;
-    head->next->pre = new;
     head->next = new;
 } 
 
@@ -127,7 +128,7 @@ static struct page_node *search_pool(int order, addr_t paddr) {
     struct page_node *p = pool[order].next;
     bool found = false;
 
-    for(; p->next!=p; p=p->next) {
+    for(; p->next!=&pool[order]; p=p->next) {
         if(p->paddr == paddr) {
             found = true;
             break;
@@ -148,6 +149,8 @@ static void remove_node(struct page_node *node) {
 
 static addr_t page_init_range(addr_t start, addr_t end, uint8_t order) {
     // order in [0, NLEVEL-1]
+    start = PGROUNDDOWN(start);
+    end = PGROUNDDOWN(end);
     size_t size = (PGSIZE) << order;
     while((end - start) > 2 * size) {
         // free [start, start + size) and one more to make a pair
@@ -158,7 +161,6 @@ static addr_t page_init_range(addr_t start, addr_t end, uint8_t order) {
     }
 
     return start;   // start less than or equal to end
-
 }
 
 static addr_t split_page_node(int order) {
@@ -167,11 +169,12 @@ static addr_t split_page_node(int order) {
     int top = order; 
     addr_t start;
     while(top < NLEVEL) {
-       start = from_pool(top);
+        start = from_pool(top);
         if(start == EOF)
             break;
         top ++;
     }
+    kpdebug("split_page_node: top is %x\n", top);
     if(top >= NLEVEL || top == order) {
         return EOF;
     }
@@ -190,6 +193,7 @@ static addr_t split_page_node(int order) {
         start = start + (PGSIZE<<order);
         
     }
+    
     return start;
 }
 
@@ -290,7 +294,7 @@ int bundle_pages_alloc(struct pages *pages) {
     return 1;
 }
 
-int bundle_pages_free(struct pages *pages) {
+void bundle_pages_free(struct pages *pages) {
 
     // assume [paddr, paddr+size) is inside proper block
     // TODO: and has no subblock? 
@@ -301,13 +305,12 @@ int bundle_pages_free(struct pages *pages) {
         order ++;
     }
     if(order >= NLEVEL)
-        return EOF;
+        panic("bundle_pages_free: too large order");
 
     addr_t start = BLOCK_ALIGN(order, pages->paddr);
     npages = merge_page_node(order, start);    
     global_empty_pages += npages;
     
-    return npages;
 
 }
 

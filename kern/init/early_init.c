@@ -28,6 +28,7 @@
 #include <aim/mmu.h>
 #include <aim/panic.h>
 #include <aim/kalloc.h>
+#include <aim/pmm.h>
 #include <drivers/io/io-mem.h>
 #include <drivers/io/io-port.h>
 #include <platform.h>
@@ -137,7 +138,10 @@ void master_early_continue() {
     	(void *)(uint32_t)p_start, (void *)(uint32_t)p_end
     );
 
-    
+    //test
+    addr_t temp_addr = pgalloc();
+    kprintf("\nTest: alloc page 0x%p", temp_addr);
+
     sleep1();
 
 }

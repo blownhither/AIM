@@ -42,12 +42,60 @@ typedef uint16_t ushort;
 // Pointer to mbr entrys at fixed addr
 uint8_t *mbr;
 
-void readseg(uchar*, uint, uint);
+// the following codes are arch-free when out and in is properly replaced
+static void
+waitdisk(void)
+{
+    // Wait for disk ready.
+    while((inb(0x1F7) & 0xC0) != 0x40)
+        ;
+}
+
+// Read a single sector at offset into dst.
+static void readsect(void *dst, uint offset)
+{
+    // Issue command.
+    waitdisk();
+    outb(0x1F2, 1);   // count = 1
+    outb(0x1F3, offset);
+    outb(0x1F4, offset >> 8);
+    outb(0x1F5, offset >> 16);
+    outb(0x1F6, (offset >> 24) | 0xE0);
+    outb(0x1F7, 0x20);  // cmd 0x20 - read sectors
+
+    // Read data.
+    waitdisk();
+    insl(0x1F0, dst, SECTSIZE/4);
+}
+
+// Read 'count' bytes at 'offset' from kernel into physical address 'pa'.
+// Might copy more than asked.
+static void
+readseg(uchar* pa, uint count, uint offset)
+{
+    uchar* epa;
+
+    epa = pa + count;
+
+    // Round down to sector boundary.
+    pa -= offset % SECTSIZE;
+
+    // Translate from bytes to sectors; kernel starts at sector 1.
+    offset = (offset / SECTSIZE);
+
+    // If this is too slow, we could read lots of sectors at a time.
+    // We'd write more to memory than asked, but it doesn't matter --
+    // we load in increasing order.
+    for(; pa < epa; pa += SECTSIZE, offset++)
+        readsect(pa, offset);
+}
+
 
 /**
  * Analyze elf at 2nd partition, load prog segments into memory,
  * clean bss and call its entry
  **/
+__noreturn
 void bootmain(void)
 {
     elfhdr *elf;
@@ -65,11 +113,11 @@ void bootmain(void)
     readseg((uint8_t*)elf, SECTSIZE * 16, hd_offs);
 
     // check MAGIC (using bit op to avoid pointer aliasing)
-    uint32_t magic = 0;
-    magic = elf->e_ident[3] << 24 | elf->e_ident[2] << 16 
-        | elf->e_ident[1] << 8 | elf->e_ident[0];
-    if(magic != ELF_MAGIC)
-        return;                             // bootasm.S will be in inf loop
+    // uint32_t magic = 0;
+    // magic = elf->e_ident[3] << 24 | elf->e_ident[2] << 16 
+    //   | elf->e_ident[1] << 8 | elf->e_ident[0];
+    // if(magic != ELF_MAGIC)
+    //    return;                             // bootasm.S will be in inf loop
 
     // Load each prog seg (ignores ph flags).
     ph = (proghdr*)((uchar*)elf + elf->e_phoff);
@@ -92,52 +140,6 @@ void bootmain(void)
     entry();
 }
 
-// the following codes are arch-free when out and in is properly replaced
-    void
-waitdisk(void)
-{
-    // Wait for disk ready.
-    while((inb(0x1F7) & 0xC0) != 0x40)
-        ;
-}
 
-// Read a single sector at offset into dst.
-    void
-readsect(void *dst, uint offset)
-{
-    // Issue command.
-    waitdisk();
-    outb(0x1F2, 1);   // count = 1
-    outb(0x1F3, offset);
-    outb(0x1F4, offset >> 8);
-    outb(0x1F5, offset >> 16);
-    outb(0x1F6, (offset >> 24) | 0xE0);
-    outb(0x1F7, 0x20);  // cmd 0x20 - read sectors
 
-    // Read data.
-    waitdisk();
-    insl(0x1F0, dst, SECTSIZE/4);
-}
-
-// Read 'count' bytes at 'offset' from kernel into physical address 'pa'.
-// Might copy more than asked.
-    void
-readseg(uchar* pa, uint count, uint offset)
-{
-    uchar* epa;
-
-    epa = pa + count;
-
-    // Round down to sector boundary.
-    pa -= offset % SECTSIZE;
-
-    // Translate from bytes to sectors; kernel starts at sector 1.
-    offset = (offset / SECTSIZE);
-
-    // If this is too slow, we could read lots of sectors at a time.
-    // We'd write more to memory than asked, but it doesn't matter --
-    // we load in increasing order.
-    for(; pa < epa; pa += SECTSIZE, offset++)
-        readsect(pa, offset);
-}
 

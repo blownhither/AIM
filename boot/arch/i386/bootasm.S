@@ -51,10 +51,26 @@ seta20.2:
     movb    $0xdf, %al
     outb    %al, $0x60
 
-    push    %ebp
-    // call    memory_detection
-    pop     %ebp
-    call    protected_mode  // no return
+    // push    %ebp
+
+simple_detection:    
+    xor     %ebx, %ebx      // Continuation
+    mov     $0x9000, %di    // Pointer to buffer
+    // mov     $0x999, %ecx    // Buffer size
+
+detec_loop:
+    mov     $0xe820, %eax   // Function code
+    mov     $0x0534D4150, %edx  // Signature
+    int     $0x15 
+
+    jc      end_detection
+    add     $24, %edi
+    test    %ebx, %ebx
+    jne     detec_loop
+    movw    %di, (0x8990)
+end_detection:
+    // pop     %ebp
+
 
 protected_mode:
 

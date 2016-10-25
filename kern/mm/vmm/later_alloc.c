@@ -7,7 +7,10 @@
 #include <sys/param.h>
 #include <libc/string.h>
 #include <aim/panic.h>
+#include <aim/mmu.h>
+#include <aim/console.h>
 
+#define printk kprintf
 
 #define GFP_LEVEL_MASK 0xf
 
@@ -153,3 +156,4 @@ int get_order (int size)
 			return order; 
 	return -1;
 }
+

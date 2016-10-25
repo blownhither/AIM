@@ -49,6 +49,35 @@ int early_devices_init(void)
 	return 0;
 }
 
+typedef struct address_range_descriptor {
+	uint64_t base;
+	uint64_t length;
+	uint64_t type;
+} ARD;
+
+#define ARD_ENTRY_ADDR 0x9000
+#define ARD_COUNT_ADDR 0x8990
+#define ARD_ENTRY_TARGET 3
+
+static uint64_t __addr_base, __addr_length;
+
+void get_mem_config() {
+	// uint32_t n = (*(void **)ARD_COUNT_ADDR - (void *)ARD_ENTRY_ADDR) / sizeof(ARD);
+	ARD *entry = (ARD *)ARD_ENTRY_ADDR;
+	kprintf("Selected address range descriptor is :\n");
+	kprintf("[%x%x, +%x%x], %x\n", 
+		(uint32_t)entry[ARD_ENTRY_TARGET].base & 0xffffffff,
+		(uint32_t)(entry[ARD_ENTRY_TARGET].base >> 32),
+		(uint32_t)entry[ARD_ENTRY_TARGET].length & 0xffffffff,
+		(uint32_t)(entry[ARD_ENTRY_TARGET].length >> 32), 
+		(uint32_t)entry[ARD_ENTRY_TARGET].type
+	);
+	*(uint64_t *)((void *)&__addr_base) // - KERN_BASE) 
+		= entry[ARD_ENTRY_TARGET].base;
+	*(uint64_t *)((void *)&__addr_length) // - KERN_BASE) 
+		= entry[ARD_ENTRY_TARGET].length;
+}
+
 __noreturn
 void master_early_init(void)
 {
@@ -56,10 +85,10 @@ void master_early_init(void)
 	early_mapping_clear();
 	mmu_handlers_clear();
 	/* prepare early devices like memory bus and port bus */
+
 	if (early_devices_init() < 0)
 		goto panic;
 	/* other preperations, including early secondary buses */
-	
 	if (early_console_init(
 		EARLY_CONSOLE_BUS,
 		EARLY_CONSOLE_BASE,
@@ -67,6 +96,9 @@ void master_early_init(void)
 	) < 0)
 		panic("Early console init failed.\n");
 	kputs("Hello, world!\n");
+
+	
+	get_mem_config();
 
 	arch_early_init();	// only go back to master_early_continue
 

@@ -26,6 +26,15 @@
 #include "sys/types.h"
 #include "aim/panic.h"
 
+/*linux 1.1*/
+#define save_flags(x) \
+__asm__ __volatile__("pushfl ; popl %0":"=r" (x): /* no input */ :"memory")
+
+
+#define restore_flags(x) \
+__asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"r" (x):"memory")
+
+/*xv6*/
 static inline uchar
 inb(ushort port)
 {

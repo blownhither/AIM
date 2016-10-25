@@ -28,11 +28,11 @@ static bitmap *page_map[NLEVEL];
 #define MAP_SIZE(x) ((x + 7)>>3)
 
 // Free page pool
-struct page_node {
+/*struct page_node {
     addr_t paddr;
     struct page_node *pre;
     struct page_node *next;
-};
+};*/
 static struct page_node pool[NLEVEL];
 
 // Statistics

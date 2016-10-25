@@ -95,7 +95,6 @@ readseg(uchar* pa, uint count, uint offset)
  * Analyze elf at 2nd partition, load prog segments into memory,
  * clean bss and call its entry
  **/
-__noreturn
 void bootmain(void)
 {
     elfhdr *elf;

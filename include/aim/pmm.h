@@ -31,6 +31,14 @@ struct pages {
 	gfp_t flags;
 };
 
+// Free page pool
+struct page_node {
+    addr_t paddr;
+    struct page_node *pre;
+    struct page_node *next;
+};
+
+
 struct page_allocator {
 	int (*alloc)(struct pages *pages);
 	void (*free)(struct pages *pages);

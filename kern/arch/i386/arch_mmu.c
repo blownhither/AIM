@@ -3,6 +3,7 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <aim/early_kmmap.h>
 #include <aim/mmu.h>
 #include <aim/panic.h>
@@ -79,7 +80,7 @@ void mmu_init(pgindex_t *boot_page_index)
 }
 
 void page_index_clear(pgindex_t *boot_page_index) {
-    memset(boot_page_index, 0, PGSIZE);  //TODO: hlt?
+    memset(boot_page_index, JUNKBYTE, PGSIZE);  //TODO: hlt?
 }
 
 /***********************************/

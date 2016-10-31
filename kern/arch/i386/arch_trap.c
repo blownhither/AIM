@@ -7,20 +7,17 @@
 #include <arch-trap.h>
 #include <arch-mmu.h>
 #include <segment.h>
+#include <aim/panic.h>
 
 #define NIDT 256
 
 static struct gatedesc idt[NIDT];
 extern uint32_t vectors[];
 
-void trap_init(void) {
-	init_vectors();	// prepare int vectors
 
-	//TODO: lapic
-
-	//TODO: outside int ?
-
-	// int not enabled in this function
+__noreturn
+void trap_return(struct trapframe *tf) {
+	while(1);
 }
 
 void init_vectors() {
@@ -34,11 +31,21 @@ void init_vectors() {
 
 void trap(struct trapframe *tf) {
 	if(tf->trapno == T_SYSCALL) {
-		// a(all num), b c d esi edi ebp
+		// a(int num), args: b c d esi edi ebp
 		// return at eax
-		// handle_syscall()
+		// handle_syscall(number)
 	}
 	else {
 		panic("Implement me!");
 	}
+}
+
+void trap_init(void) {
+	init_vectors();	// prepare int vectors
+
+	//TODO: lapic
+
+	//TODO: outside int ?
+
+	// int not enabled in this function
 }

@@ -105,6 +105,7 @@ static inline void *memset (void *addr, int data, size_t len) {
 
 #define CR4_PSE         0x00000010      // Page size extension
 
+/* moved to segment.h
 // various segment selectors.
 #define SEG_KCODE 1  // kernel code
 #define SEG_KDATA 2  // kernel data+stack
@@ -113,8 +114,10 @@ static inline void *memset (void *addr, int data, size_t len) {
 #define SEG_UDATA 5  // user data+stack
 #define SEG_TSS   6  // this process's task state
 
+
 // cpu->gdt[NSEGS] holds the above segments.
 #define NSEGS     7
+*/
 
 //PAGEBREAK!
 
@@ -255,7 +258,6 @@ struct taskstate {
   ushort iomb;       // I/O map base address
 };
 
-// PAGEBREAK: 12
 // Gate descriptors for interrupts and traps
 struct gatedesc {
   uint off_15_0 : 16;   // low 16 bits of offset in segment

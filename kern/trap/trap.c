@@ -52,4 +52,3 @@ void handle_interrupt(int irq)
 {
 	kpdebug("<IRQ %d>\n", irq);
 }
-

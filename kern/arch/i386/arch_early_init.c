@@ -26,6 +26,7 @@
 #include "aim/boot.h"
 #include "aim/mmu.h"
 #include "aim/kalloc.h"
+#include "segment.h"
 
 extern uint32_t __bss_start_kern, __bss_end_kern;
 

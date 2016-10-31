@@ -22,5 +22,7 @@ void init_vectors() {
 }
 
 void trap(struct trapframe *tf) {
-	
+	if(tf->trapno == T_SYSCALL) {
+		
+	}
 }

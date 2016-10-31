@@ -14,7 +14,9 @@ static struct gatedesc idt[NIDT];
 extern uint32_t vectors[];
 
 void trap_init(void) {
-	
+	init_vectors();	// prepare int vectors
+
+	// int not enabled in this function
 }
 
 void init_vectors() {

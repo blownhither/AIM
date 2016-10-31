@@ -16,6 +16,10 @@ extern uint32_t vectors[];
 void trap_init(void) {
 	init_vectors();	// prepare int vectors
 
+	//TODO: lapic
+
+	//TODO: outside int ?
+
 	// int not enabled in this function
 }
 
@@ -30,7 +34,9 @@ void init_vectors() {
 
 void trap(struct trapframe *tf) {
 	if(tf->trapno == T_SYSCALL) {
-
+		// a(all num), b c d esi edi ebp
+		// return at eax
+		// handle_syscall()
 	}
 	else {
 		panic("Implement me!");

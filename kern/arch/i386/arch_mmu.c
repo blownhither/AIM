@@ -53,9 +53,9 @@ void early_mm_init(void) {
     // extern uint32_t __bss_end_kern;
 
     page_index_early_map(entrypgdir, (addr_t)0, 
-        (void *)KERN_BASE, PHYSTOP);
+        (void *)KERN_BASE, 0xff000000);
     page_index_early_map(entrypgdir, (addr_t)0, 
-        (void *)0, PHYSTOP);
+        (void *)0, 0xff000000);
 
     // (don't) invalidate low addr pages (user space)
     // page_early_clear_user(entrypgdir);

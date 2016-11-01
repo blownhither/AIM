@@ -33,14 +33,6 @@ master_early_entry:
     cli     // no interrupt
     cld
 
-/* //TODO: these are updated in new repo
-mov	$kstack_top, %esp
-xor	%eax, %eax
-push	%eax		// eip=0
-push	%eax		// ebp=0
-mov	%esp, %ebp
-*/
-
     mov	$__kstack_top - KERN_BASE, %esp
     xor	%eax, %eax
     push	%eax		// eip=0

@@ -78,7 +78,7 @@ void trap_init(void) {
 	// init lapic
 	lapic_init();
 
-	//TODO: ioapic
+	// init ioapic
 	ioapic_init();
 
 	// init PIC (i8259)
@@ -90,7 +90,6 @@ void trap_init(void) {
 	
 	lidt((struct gatedesc *)idt, sizeof(idt));
 
-	// sti();
 }
 
 

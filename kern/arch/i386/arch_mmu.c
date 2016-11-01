@@ -81,7 +81,7 @@ void mmu_init(pgindex_t *boot_page_index)
 }
 
 void page_index_clear(pgindex_t *boot_page_index) {
-    memset(boot_page_index, JUNKBYTE, PGSIZE);  //TODO: hlt?
+    memset(boot_page_index, JUNKBYTE, PGSIZE); 
 }
 
 /***********************************/
@@ -198,7 +198,6 @@ int switch_pgindex(pgindex_t *pgindex) {
 }
 /* Get the currently loaded page index structure */
 pgindex_t *get_pgindex(void){
-    //TODO: implement
     pgindex_t *ret;
     __asm__ __volatile__ (
         "mov %%cr3, %0;"

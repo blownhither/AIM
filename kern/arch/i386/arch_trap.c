@@ -81,7 +81,7 @@ void trap_init(void) {
 	
 	lidt((struct gatedesc *)idt, sizeof(idt));
 
-	sti();
+	// sti();
 }
 
 

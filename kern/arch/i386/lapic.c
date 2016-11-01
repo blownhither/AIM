@@ -6,6 +6,7 @@
 #include <sys/param.h>
 #include <arch-trap.h>
 
+#define LAPIC_ADDR 0xFEC00000
 
 // Local APIC registers, divided by 4 for use as uint[] indices.
 #define ID      (0x0020/4)   // ID
@@ -51,7 +52,7 @@ lapicw(int index, int value)
 void
 lapic_init(void)
 {
-  lapic = (uint *)0xfee00000;
+  lapic = (uint *)LAPIC_ADDR;
   if(!lapic)
     return;
 

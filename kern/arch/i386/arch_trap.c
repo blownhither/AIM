@@ -78,8 +78,8 @@ void trap_init(void) {
 	//TODO: outside int ?
 
 	// int not enabled in this function
-	// sti();
-	//lidt(&idt, sizeof(idt));
+	sti();
+	lidt(&idt, sizeof(idt));
 }
 
 

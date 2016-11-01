@@ -49,7 +49,8 @@ void arch_load_gdt() {
     //TODO: kern_gdt[SEG_KCPU] = SEG(STA_W, &c->cpu, 8, 0);
     
     // lgdt a memory address
-    __asm__ __volatile__ ("lgdt %0":"=m"(kern_gdt));
+    // __asm__ __volatile__ ("lgdt %0":"=m"(kern_gdt));
+    lgdt((struct segdesc *)kern_gdt, sizeof(kern_gdt));
 }
 
 __attribute__((__aligned__(PGSIZE)))

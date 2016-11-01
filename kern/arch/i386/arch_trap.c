@@ -79,9 +79,9 @@ void trap_init(void) {
 
 	// int not enabled in this function
 	
-	lidt((struct gatedesc *)&idt, sizeof(idt));
+	lidt((struct gatedesc *)idt, sizeof(idt));
 
-	// sti();
+	sti();
 }
 
 

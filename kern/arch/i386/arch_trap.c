@@ -8,12 +8,12 @@
 #include <arch-mmu.h>
 #include <segment.h>
 #include <aim/panic.h>
+#include <asm.h>
 
 #define NIDT 256
 
 static struct gatedesc idt[NIDT];
 extern uint32_t vectors[];
-
 
 __noreturn
 void trap_return(struct trapframe *tf) {
@@ -40,12 +40,43 @@ void trap(struct trapframe *tf) {
 	}
 }
 
+// init PIC (i8259)
+#define PORT_PIC_MASTER 0x20
+#define PORT_PIC_SLAVE  0xA0
+
+void init_i8259(void) {
+	/* mask all interrupts */
+	outb(PORT_PIC_MASTER + 1, 0xFF);
+	outb(PORT_PIC_SLAVE + 1 , 0xFF);
+	
+	/* start initialization */
+	outb(PORT_PIC_MASTER, 0x11);
+	outb(PORT_PIC_MASTER + 1, 32);
+	outb(PORT_PIC_MASTER + 1, 1 << 2);
+	outb(PORT_PIC_MASTER + 1, 0x3);
+	outb(PORT_PIC_SLAVE, 0x11);
+	outb(PORT_PIC_SLAVE + 1, 32 + 8);
+	outb(PORT_PIC_SLAVE + 1, 2);
+	outb(PORT_PIC_SLAVE + 1, 0x3);
+	outb(PORT_PIC_MASTER, 0x68);
+	outb(PORT_PIC_MASTER, 0x0A);
+	outb(PORT_PIC_SLAVE, 0x68);
+	outb(PORT_PIC_SLAVE, 0x0A);
+}
+
 void trap_init(void) {
 	init_vectors();	// prepare int vectors
 
 	//TODO: lapic
+	//TODO: ioapic
+
+	// init PIC (i8259)
+	init_i8259();
 
 	//TODO: outside int ?
 
 	// int not enabled in this function
 }
+
+
+

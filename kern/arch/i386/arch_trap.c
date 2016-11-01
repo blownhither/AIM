@@ -70,17 +70,19 @@ void init_i8259(void) {
 }
 
 void lapic_init();
+void ioapic_init();
 
 void trap_init(void) {
 	idt_init();	// prepare int vectors
 
 	// init lapic
-	// lapic_init();
+	lapic_init();
 
 	//TODO: ioapic
+	ioapic_init();
 
 	// init PIC (i8259)
-	// init_i8259();
+	init_i8259();
 
 	//TODO: outside int ?
 

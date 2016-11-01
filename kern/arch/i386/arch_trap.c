@@ -29,17 +29,20 @@ void idt_init() {
 }
 
 void trap(struct trapframe *tf) {
-	if(tf->trapno == T_SYSCALL) {
-		// a(int num), args: b c d esi edi ebp
-		long ans = handle_syscall(
-			tf->eax, tf->ebx, tf->ecx, tf->edx,
-			tf->esi, tf->edi, tf->ebp
-		);
-		tf->eax = ans;
+	long ans;
+	switch(tf->trapno) {
+		case T_SYSCALL:
+			ans = handle_syscall(
+				tf->eax, tf->ebx, tf->ecx, tf->edx,
+				tf->esi, tf->edi, tf->ebp
+			);
+			tf->eax = ans;
+			break;
+		default:
+			handle_interrupt(tf->trapno);
+			break;
 	}
-	else {
-		panic("Implement me!");
-	}
+
 }
 
 // init PIC (i8259)

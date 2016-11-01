@@ -166,7 +166,9 @@ void master_early_continue() {
 
     __asm__ __volatile__ (
     	"mov $0x20, %%eax;"
-    	" int $0x80;"::
+    	// " int $0x80;"
+    	"int $0x20;"
+    	::
     );
 
     panic("Trap init done");

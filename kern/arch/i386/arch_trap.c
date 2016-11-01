@@ -64,10 +64,14 @@ void init_i8259(void) {
 	outb(PORT_PIC_SLAVE, 0x0A);
 }
 
+void lapic_init();
+
 void trap_init(void) {
 	init_idt();	// prepare int vectors
 
 	//TODO: lapic
+	lapic_init();
+	
 	//TODO: ioapic
 
 	// init PIC (i8259)

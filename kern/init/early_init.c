@@ -116,6 +116,7 @@ void master_early_simple_alloc(void *start, void *end);
 void get_early_end();
 void page_alloc_init(addr_t start, addr_t end);
 void master_later_alloc();
+void trap_init();
 
 extern addr_t *__early_buf_end;
 void master_early_simple_alloc(void *start, void *end);
@@ -150,7 +151,7 @@ void master_early_continue() {
 
     kprintf("3. later simple allocator depends on page allocator\n");
     master_later_alloc();
-
+/*
     addr_t temp_addr;
     // void  *p;
     temp_addr = pgalloc();
@@ -159,9 +160,16 @@ void master_early_continue() {
     temp_addr = pgalloc();
     pgfree(temp_addr);
     kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
-    
+*/
 
-    panic("Test done!");
+    trap_init();
+
+    __asm__ __volatile__ (
+    	"mov $0x20, %%eax;"
+    	" int $0x80;"::
+    );
+
+    panic("Trap init done");
 
     sleep1();
 

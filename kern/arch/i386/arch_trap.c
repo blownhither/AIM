@@ -20,7 +20,7 @@ void trap_return(struct trapframe *tf) {
 	while(1);
 }
 
-void init_vectors() {
+void init_idt() {
 	for(int i=0; i < NIDT; ++i) {
 		SETGATE(idt[i], 0, SEG_KCODE<<3, vectors[i], 0);
 	}
@@ -65,7 +65,7 @@ void init_i8259(void) {
 }
 
 void trap_init(void) {
-	init_vectors();	// prepare int vectors
+	init_idt();	// prepare int vectors
 
 	//TODO: lapic
 	//TODO: ioapic
@@ -76,6 +76,8 @@ void trap_init(void) {
 	//TODO: outside int ?
 
 	// int not enabled in this function
+	// sti();
+	//lidt(&idt, sizeof(idt));
 }
 
 

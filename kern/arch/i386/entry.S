@@ -81,9 +81,9 @@ alltraps:
     call trap
     addl $4, %esp
 
-# Return falls through to trapret...
-.globl trapret
-trapret:
+# Return falls through to trap_return...
+.globl trap_return
+trap_return:
     popal
     popl %gs
     popl %fs

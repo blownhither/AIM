@@ -16,11 +16,9 @@ static struct gatedesc idt[NIDT];
 extern uint32_t vectors[];
 
 __noreturn
-void trap_return(struct trapframe *tf) {
-	while(1);
-}
+void trap_return(struct trapframe *tf);
 
-void init_idt() {
+void idt_init() {
 	for(int i=0; i < NIDT; ++i) {
 		SETGATE(idt[i], 0, SEG_KCODE<<3, vectors[i], 0);
 	}
@@ -67,11 +65,11 @@ void init_i8259(void) {
 void lapic_init();
 
 void trap_init(void) {
-	init_idt();	// prepare int vectors
+	idt_init();	// prepare int vectors
 
-	//TODO: lapic
+	// init lapic
 	lapic_init();
-	
+
 	//TODO: ioapic
 
 	// init PIC (i8259)

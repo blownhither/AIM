@@ -68,18 +68,20 @@ void trap_init(void) {
 	idt_init();	// prepare int vectors
 
 	// init lapic
-	lapic_init();
+	// lapic_init();
 
 	//TODO: ioapic
 
 	// init PIC (i8259)
-	init_i8259();
+	// init_i8259();
 
 	//TODO: outside int ?
 
 	// int not enabled in this function
-	sti();
-	lidt(&idt, sizeof(idt));
+	
+	lidt((struct gatedesc *)&idt, sizeof(idt));
+
+	// sti();
 }
 
 

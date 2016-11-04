@@ -30,18 +30,19 @@ void idt_init() {
 
 void trap(struct trapframe *tf) {
 	long ans;
-	switch(tf->trapno) {
-		case T_SYSCALL:
-			ans = handle_syscall(
-				tf->eax, tf->ebx, tf->ecx, tf->edx,
-				tf->esi, tf->edi, tf->ebp
-			);
-			tf->eax = ans;
-			break;
-		default:
-			handle_interrupt(tf->trapno);
-			break;
+	if(tf->trapno == T_SYSCALL) {
+		ans = handle_syscall(
+			tf->eax, tf->ebx, tf->ecx, tf->edx,
+			tf->esi, tf->edi, tf->ebp
+		);
+		tf->eax = ans;
+		return;
 	}
+	if(tf->trapno >= T_IRQ0 && tf->trapno < T_IRQ0 + 32) {
+		handle_interrupt(tf->trapno - T_IRQ0);
+		return;
+	}
+	panic("trap: Implement me for others");
 
 }
 

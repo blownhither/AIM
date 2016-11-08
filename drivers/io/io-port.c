@@ -28,7 +28,9 @@
 #include <aim/mmu.h>
 #include <aim/panic.h>
 #include <errno.h>
-
+#include <aim/vmm.h>
+#include <aim/console.h>
+#include <aim/initcalls.h>
 #include <io-port.h>
 
 #ifdef IO_PORT_ROOT
@@ -244,8 +246,11 @@ int io_port_init(struct bus_device *port_bus)
 
 #ifndef RAW
 
+
+
+
 #define DEVICE_MODEL	"io-port"
-#if 0
+#if 1
 static struct bus_driver drv;
 
 static int __new(struct devtree_entry *entry)
@@ -284,6 +289,8 @@ static int __driver_init(void)
 	return 0;
 }
 INITCALL_DRIVER(__driver_init);
+
+
 #endif /* 0 */
 #endif /* !RAW */
 

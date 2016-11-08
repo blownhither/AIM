@@ -182,12 +182,47 @@ int __early_console_init(struct bus_device *bus, addr_t base, addr_t mapped_base
 	__uart_ns16550_init(&__early_uart_ns16550);
 	__uart_ns16550_enable(&__early_uart_ns16550);
 
+	//TODO: 
 	set_console(early_console_putchar, (void *)premap_addr(DEFAULT_KPUTS));
 
 	if (jump_handlers_add((generic_fp)__jump_handler) != 0)
 		for (;;) ;	/* panic */
 	return 0;
 }
+
+int __console_init(struct bus_device *bus, addr_t base, addr_t mapped_base)
+{
+	__early_console_set_bus(bus, base);
+	__mapped_bus = (struct bus_device *)postmap_addr(bus);
+	__mapped_base = mapped_base;
+
+	__uart_ns16550_init(&__early_uart_ns16550);
+	__uart_ns16550_enable(&__early_uart_ns16550);
+
+	//TODO: 
+	set_console(early_console_putchar, DEFAULT_KPUTS);
+
+	if (jump_handlers_add((generic_fp)__jump_handler) != 0)
+		for (;;) ;	/* panic */
+	return 0;
+}
+
+#include <platform.h>
+#include <aim/initcalls.h>
+#include <drivers/io/io-mem.h>
+#include <drivers/io/io-port.h>
+
+
+static int __driver_init(void) {
+	if (early_console_init(
+		EARLY_CONSOLE_BUS,
+		EARLY_CONSOLE_BASE,
+		EARLY_CONSOLE_MAPPING
+	) < 0)
+		panic("Early console init failed.\n");
+	kprintf("Hello World in __driver_init");
+}
+INITCALL_DRIVER(__driver_init);
 
 #ifdef RAW /* baremetal driver */
 

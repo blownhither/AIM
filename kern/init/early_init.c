@@ -179,7 +179,7 @@ void master_early_continue() {
 
     //asm("sti");
 
-    panic("Trap init done");
+    //panic("Trap init done");
 
     sleep1();
 

@@ -86,10 +86,10 @@ struct device *dev_from_name(char *name)
 extern uint32_t early_init_start;
 extern uint32_t early_init_end;
 int do_early_initcalls() {
-	initcall_t p = (initcall_t)(void *)&early_init_start;
-	initcall_t end = (initcall_t)(void *)&early_init_end;
+	initcall_t *p = (initcall_t *)(void *)&early_init_start;
+	initcall_t *end = (initcall_t *)(void *)&early_init_end;
 	for(; p<end; p++) {
-		p();
+		(*p)();
 	}
 }
 
@@ -109,7 +109,11 @@ void register_driver(unsigned int major, struct driver *drv) {
 	return;
 }
 void initdev(struct device *dev, int class, const char *devname, dev_t devno,
-    struct driver *drv) {
-	// kpdebug("initdev: %s\n", dev->name);
+    	struct driver *drv) {
+	dev->class = class;
+	memcpy(dev->name, devname, DEV_NAME_MAX);
+	dev->devno = devno;
+	dev->driver = *drv;
+
 	return;
 }

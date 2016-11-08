@@ -183,6 +183,9 @@ static int __init(void)
 	return 0;
 }
 
+void __global_mzy() {
+	kputs("something something dark");
+}
 
 INITCALL_CORE(__init);
 

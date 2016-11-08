@@ -271,6 +271,7 @@ static int __driver_init(void) {
 	uart = kmalloc(sizeof(*uart), GFP_ZERO);
 	uart->bus = port->bus;
 	uart->base = port->base;
+	
 
 	__global_uart = uart;
 

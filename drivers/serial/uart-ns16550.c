@@ -215,17 +215,21 @@ int __console_init(struct bus_device *bus, addr_t base, addr_t mapped_base)
 #include <drivers/io/io-mem.h>
 #include <drivers/io/io-port.h>
 
-static int console_putc(dev_t dev, int c) {
+static int console_putc(int c) {
 	//TODO: check device
-	struct chr_device *adev = (struct chr_device *)dev_from_id(dev);	
+	struct chr_device *adev = (struct chr_device *)dev_from_name("uart-ns16550");
 	return __uart_ns16550_putchar(adev, c);
-
 }
 
-static int console_getc(dev_t dev) {
+static int driver_getc(dev_t dev) {
 	struct chr_device *adev = (struct chr_device *)dev_from_id(dev);	
 	return __uart_ns16550_getchar(adev);
 	// return __uart_ns16550_getchar(&__early_uart_ns16550);
+}
+
+static int driver_putc(dev_t dev, int c) {
+	struct chr_device *adev = (struct chr_device *)dev_from_id(dev);	
+	return __uart_ns16550_putchar(adev, c); 
 }
 
 static struct chr_driver drv = {
@@ -236,8 +240,8 @@ static struct chr_driver drv = {
 	.new = NULL,
 	.read = NULL,
 	.write = NULL,
-	.getc = console_getc,
-	.putc = console_putc
+	.getc = driver_getc,
+	.putc = driver_putc
 
 };
 
@@ -256,15 +260,22 @@ static int __driver_init(void) {
 	) < 0)
 		panic("Early console init failed.\n");
 */
-
-	register_driver(NOMAJOR, &drv);
-
+	struct device *dev;
+	dev = dev_from_name("portio");
+	
 	struct chr_device *uart;
 	uart = kmalloc(sizeof(*uart), GFP_ZERO);
-	initdev(uart, DEVCLASS_CHR, "uart-ns16550-hw", NODEV, &drv);
+	uart->bus = dev->bus;
+	uart->base = dev->base;
+
+
+	register_driver(NOMAJOR, &drv);
+	initdev(uart, DEVCLASS_CHR, "uart-ns16550", NODEV, &drv);
 	dev_add(uart);
 
-	kprintf("Hello World in __driver_init");
+	set_console(console_putc, DEFAULT_KPUTS);
+
+	//kprintf("Hello World in __driver_init");
 }
 INITCALL_DRIVER(__driver_init);
 

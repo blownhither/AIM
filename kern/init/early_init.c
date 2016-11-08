@@ -152,7 +152,7 @@ void master_early_continue() {
 
     kprintf("3. later simple allocator depends on page allocator\n");
     master_later_alloc();
-/*
+
     addr_t temp_addr;
     // void  *p;
     temp_addr = pgalloc();
@@ -161,7 +161,7 @@ void master_early_continue() {
     temp_addr = pgalloc();
     pgfree(temp_addr);
     kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
-*/
+
 
     trap_init();
 

@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <aim/device.h>
 #include <aim/initcalls.h>
+#include <aim/console.h>
 
 #include <libc/string.h>
 
@@ -92,19 +93,23 @@ int do_early_initcalls() {
 	}
 }
 
-extern uint32_t early_norm_start;
-extern uint32_t early_norm_end;
+extern uint32_t norm_init_start;
+extern uint32_t norm_init_end;
 int do_initcalls() {
-	
+	initcall_t *p = (initcall_t *)(void *)&norm_init_start;
+	initcall_t *end = (initcall_t *)(void *)&norm_init_end;
+	for(; p<end; p++) {
+		(*p)();
+	}
 }
 
 //TODO:
 void register_driver(unsigned int major, struct driver *drv) {
-	kpdebug("register_driver: driver at %p", drv);
+	// kpdebug("register_driver: driver at %p\n", drv);
 	return;
 }
 void initdev(struct device *dev, int class, const char *devname, dev_t devno,
     struct driver *drv) {
-	kpdebug("initdev: %s\n", dev->name);
+	// kpdebug("initdev: %s\n", dev->name);
 	return;
 }

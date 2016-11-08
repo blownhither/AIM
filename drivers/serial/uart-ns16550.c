@@ -215,9 +215,13 @@ int __console_init(struct bus_device *bus, addr_t base, addr_t mapped_base)
 #include <drivers/io/io-mem.h>
 #include <drivers/io/io-port.h>
 
+static struct chr_device *__global_uart;
+
 static int console_putc(int c) {
 	//TODO: check device
-	struct chr_device *adev = (struct chr_device *)dev_from_name("uart-ns16550");
+	// struct chr_device *adev = (struct chr_device *)dev_from_name("uart-ns16550");
+	struct chr_device *adev = &__early_uart_ns16550;
+	
 	return __uart_ns16550_putchar(adev, c);
 }
 
@@ -233,15 +237,15 @@ static int driver_putc(dev_t dev, int c) {
 }
 
 static struct chr_driver drv = {
-	.class = DEVCLASS_CHR,
-	.type = DRVTYPE_TTY,	//TODO: check _NORMAL?
-	.open = NULL,
-	.close = NULL,
-	.new = NULL,
-	.read = NULL,
-	.write = NULL,
-	.getc = driver_getc,
-	.putc = driver_putc
+	.class 	= DEVCLASS_CHR,
+	.type 	= DRVTYPE_TTY,	//TODO: check _NORMAL?
+	.open 	= NULL,
+	.close 	= NULL,
+	.new 	= NULL,
+	.read 	= NULL,
+	.write 	= NULL,
+	.getc 	= driver_getc,
+	.putc 	= driver_putc
 
 };
 
@@ -268,6 +272,7 @@ static int __driver_init(void) {
 	uart->bus = port->bus;
 	uart->base = port->base;
 
+	__global_uart = uart;
 
 	register_driver(NOMAJOR, &drv);
 	initdev(uart, DEVCLASS_CHR, "uart-ns16550", NODEV, &drv);
@@ -276,8 +281,11 @@ static int __driver_init(void) {
 	set_console(console_putc, DEFAULT_KPUTS);
 
 	//kprintf("Hello World in __driver_init");
+
+	return 0;
 }
-INITCALL_DRIVER(__driver_init);
+//TODO: DEV?
+INITCALL_DEV(__driver_init);
 
 #ifdef RAW /* baremetal driver */
 

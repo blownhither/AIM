@@ -167,13 +167,14 @@ void master_early_continue() {
 
     do_initcalls();
 
-    kprintf("try int 0x20\n");
+    // kprintf("try int 0x20\n");
+    /*
     __asm__ __volatile__ (
     	"mov $0x20, %%eax;"
     	" int $0x80;"
     	// "int $0x20;"
     	::
-    );
+    );*/
 
 
     //asm("sti");

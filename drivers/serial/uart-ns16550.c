@@ -260,13 +260,13 @@ static int __driver_init(void) {
 	) < 0)
 		panic("Early console init failed.\n");
 */
-	struct device *dev;
-	dev = dev_from_name("portio");
+	struct device *port;
+	port = dev_from_name("portio");
 	
 	struct chr_device *uart;
 	uart = kmalloc(sizeof(*uart), GFP_ZERO);
-	uart->bus = dev->bus;
-	uart->base = dev->base;
+	uart->bus = port->bus;
+	uart->base = port->base;
 
 
 	register_driver(NOMAJOR, &drv);

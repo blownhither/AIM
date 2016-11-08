@@ -120,6 +120,7 @@ extern struct driver *devsw[];
 
 void register_driver(unsigned int major, struct driver *drv);
 
+
 /* Devices */
 #define DEV_NAME_MAX		64
 #define DEV_REG_MAX		10

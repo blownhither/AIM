@@ -22,9 +22,12 @@
 #endif
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <aim/console.h>
 #include <aim/device.h>
 #include <aim/mmu.h>
+#include <aim/vmm.h>
+#include <aim/gfp.h>
 
 #include <uart-ns16550-hw.h>
 
@@ -212,14 +215,55 @@ int __console_init(struct bus_device *bus, addr_t base, addr_t mapped_base)
 #include <drivers/io/io-mem.h>
 #include <drivers/io/io-port.h>
 
+static int console_putc(dev_t dev, int c) {
+	//TODO: check device
+	struct chr_device *adev = (struct chr_device *)dev_from_id(dev);	
+	return __uart_ns16550_putchar(adev, c);
+
+}
+
+static int console_getc(dev_t dev) {
+	struct chr_device *adev = (struct chr_device *)dev_from_id(dev);	
+	return __uart_ns16550_getchar(adev);
+	// return __uart_ns16550_getchar(&__early_uart_ns16550);
+}
+
+static struct chr_driver drv = {
+	.class = DEVCLASS_CHR,
+	.type = DRVTYPE_TTY,	//TODO: check _NORMAL?
+	.open = NULL,
+	.close = NULL,
+	.new = NULL,
+	.read = NULL,
+	.write = NULL,
+	.getc = console_getc,
+	.putc = console_putc
+
+};
 
 static int __driver_init(void) {
-	if (early_console_init(
+	
+	// addr_t mapped_base;
+
+	// int ret = get_mapped_base(base, type, &mapped_base);
+	// if (ret < 0) return ret; // caused by kmmap, may have various reasons
+
+/*
+	if (__console_init(
 		EARLY_CONSOLE_BUS,
-		EARLY_CONSOLE_BASE,
-		EARLY_CONSOLE_MAPPING
+		UART_BASE,
+		UART_BASE
 	) < 0)
 		panic("Early console init failed.\n");
+*/
+
+	register_driver(NOMAJOR, &drv);
+
+	struct chr_device *uart;
+	uart = kmalloc(sizeof(*uart), GFP_ZERO);
+	initdev(uart, DEVCLASS_CHR, "uart-ns16550-hw", NODEV, &drv);
+	dev_add(uart);
+
 	kprintf("Hello World in __driver_init");
 }
 INITCALL_DRIVER(__driver_init);
@@ -230,3 +274,14 @@ INITCALL_DRIVER(__driver_init);
 
 #endif /* RAW */
 
+
+
+
+//TODO:
+void register_driver(unsigned int major, struct driver *drv) {
+	return;
+}
+void initdev(struct device *dev, int class, const char *devname, dev_t devno,
+    struct driver *drv) {
+	return;
+}

@@ -30,6 +30,7 @@
 #include <aim/kalloc.h>
 #include <aim/pmm.h>
 #include <aim/vmm.h>
+#include <aim/initcalls.h>
 #include <drivers/io/io-mem.h>
 #include <drivers/io/io-port.h>
 #include <platform.h>
@@ -163,6 +164,8 @@ void master_early_continue() {
 */
 
     trap_init();
+
+    do_initcalls();
 
     kprintf("try int 0x20\n");
     __asm__ __volatile__ (

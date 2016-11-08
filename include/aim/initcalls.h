@@ -55,6 +55,7 @@ typedef int (*initcall_t)(void);
 int do_early_initcalls();
 int do_initcalls();
 
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* _AIM_INITCALLS_H */

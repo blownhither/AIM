@@ -285,14 +285,3 @@ INITCALL_DRIVER(__driver_init);
 
 #endif /* RAW */
 
-
-
-
-//TODO:
-void register_driver(unsigned int major, struct driver *drv) {
-	return;
-}
-void initdev(struct device *dev, int class, const char *devname, dev_t devno,
-    struct driver *drv) {
-	return;
-}

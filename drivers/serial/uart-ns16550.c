@@ -215,12 +215,12 @@ int __console_init(struct bus_device *bus, addr_t base, addr_t mapped_base)
 #include <drivers/io/io-mem.h>
 #include <drivers/io/io-port.h>
 
-static struct chr_device *__global_uart;
+// static struct chr_device *__global_uart;
 
 static int console_putc(int c) {
 	//TODO: check device
-	// struct chr_device *adev = (struct chr_device *)dev_from_name("uart-ns16550");
-	struct chr_device *adev = &__early_uart_ns16550;
+	struct chr_device *adev = (struct chr_device *)dev_from_name("uart-ns16550");
+	// struct chr_device *adev = &__early_uart_ns16550;
 	
 	return __uart_ns16550_putchar(adev, c);
 }
@@ -269,11 +269,11 @@ static int __driver_init(void) {
 	
 	struct chr_device *uart;
 	uart = kmalloc(sizeof(*uart), GFP_ZERO);
-	uart->bus = port->bus;
-	uart->base = port->base;
-	
+	uart->bus = (struct bus_device *)port;	
+	//uart->base = port->base;
+	uart->base = UART_BASE;
 
-	__global_uart = uart;
+	// __global_uart = uart;
 
 	register_driver(NOMAJOR, &drv);
 	initdev(uart, DEVCLASS_CHR, "uart-ns16550", NODEV, &drv);

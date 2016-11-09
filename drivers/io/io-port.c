@@ -286,6 +286,7 @@ static int __driver_init(void)
 	initdev(portio_bus, DEVCLASS_BUS, "portio", NODEV, &drv);
 	dev_add(portio_bus);
 #endif
+
 	return 0;
 }
 INITCALL_DRIVER(__driver_init);

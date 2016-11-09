@@ -162,6 +162,8 @@ void master_early_continue() {
     pgfree(temp_addr);
     kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
 
+    void __global_mzy();
+    __global_mzy();
 
     trap_init();
 

@@ -166,20 +166,20 @@ void master_early_continue() {
     trap_init();
 
     do_initcalls();
-
-    kprintf("try int 0x20\n");
     /*
+    kprintf("try int 0x20\n");
+    
     __asm__ __volatile__ (
     	"mov $0x20, %%eax;"
     	" int $0x80;"
     	// "int $0x20;"
     	::
-    );*/
+    );
 
-
+    */
     //asm("sti");
 
-    //panic("Trap init done");
+    panic("Device init done");
 
     sleep1();
 

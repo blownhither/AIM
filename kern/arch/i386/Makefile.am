@@ -33,5 +33,6 @@ libarch_la_SOURCES = \
 	arch_trap.c \
 	lapic.c \
 	ioapic.c \
-	vga.c
+	vga.c \
+	arch_libc.c
 	

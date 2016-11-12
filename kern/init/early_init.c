@@ -136,6 +136,42 @@ int page_allocator_init() {
     return 0;
 }
 
+#define MZYDEBUG
+#ifdef MZYDEBUG
+static uint32_t last = 1678844458;
+static uint32_t rand_local(uint32_t max) {
+    return (last = ((last<<3) + last + 7) % max);
+}
+
+void alloc_test() {
+    #define NTEST 1000
+    struct pages pg = {0,0,0};
+    addr_t temp_addr[NTEST];
+    uint32_t temp_size[NTEST];
+    kprintf("Available memory: %lx\n", get_free_memory());
+    for(int i=0; i<NTEST; ++i) {
+        pg.size = rand_local(40960);
+        temp_size[i] = pg.size;
+        alloc_pages(&pg);
+        temp_addr[i] = pg.paddr;
+        kprintf("TEST: palloc [0x%lx, ",  pg.paddr);
+        kprintf("+0x%lx]\n", pg.size);
+    }
+    kprintf("Available memory: %lx", get_free_memory());
+
+    for(int i=0; i<NTEST; ++i) {
+        pg.size = temp_size[i];
+        pg.paddr = temp_addr[i];
+        free_pages(&pg);
+        kprintf("TEST: free [0x%lx, ",  pg.paddr);
+        kprintf("+0x%lx]\n", pg.size);
+    }
+    kprintf("Available memory: %lx", get_free_memory());
+
+    temp_addr[0] = pgalloc();
+    kprintf("TEST: palloc at %x\n, ",  temp_addr[0]);
+}
+#endif
 
 void master_early_continue() {
 	// using [__end, +EARLY_BUF)
@@ -153,14 +189,9 @@ void master_early_continue() {
     kprintf("3. later simple allocator depends on page allocator\n");
     master_later_alloc();
 
-    addr_t temp_addr;
-    // void  *p;
-    temp_addr = pgalloc();
-    //pgfree(temp_addr);
-    kprintf("Test: alloc page 0x%p and is not freed\n", temp_addr);
-    temp_addr = pgalloc();
-    pgfree(temp_addr);
-    kprintf("Test: alloc page 0x%p and is freed\n", temp_addr);
+#ifdef MZYDEBUG
+    alloc_test();
+#endif
 
     void __global_mzy();
     __global_mzy();

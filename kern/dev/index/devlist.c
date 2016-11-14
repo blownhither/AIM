@@ -186,7 +186,7 @@ static int __init(void)
 }
 
 void __global_mzy() {
-	kputs("devlist.c: something something dark\n");
+	kputs("devlist.c: I see no evil (for linker reference)\n");
 }
 
 INITCALL_CORE(__init);

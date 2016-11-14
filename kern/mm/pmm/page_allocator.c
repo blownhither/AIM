@@ -334,12 +334,14 @@ void bundle_pages_free(struct pages *pages) {
         npages <<= 1;
         order ++;
     }
+    global_empty_pages += npages;
+    
     if(order >= NLEVEL)
         panic("bundle_pages_free: too large order");
 
     addr_t start = BLOCK_ALIGN(order, pages->paddr);
     npages = merge_page_node(order, start);    
-    global_empty_pages += npages;
+    
     
 
 }

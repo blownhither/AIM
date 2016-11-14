@@ -136,7 +136,7 @@ int page_allocator_init() {
     return 0;
 }
 
-#define MZYDEBUG
+//#define MZYDEBUG
 #ifdef MZYDEBUG
 static uint32_t last = 1678844458;
 static uint32_t rand_local(uint32_t max) {
@@ -148,7 +148,7 @@ void alloc_test() {
     struct pages pg = {0,0,0};
     addr_t temp_addr[NTEST];
     uint32_t temp_size[NTEST];
-    kprintf("Available memory: %lx\n", get_free_memory());
+    kprintf("Available memory: 0x%lx\n", get_free_memory());
     for(int i=0; i<NTEST; ++i) {
         pg.size = rand_local(40960);
         temp_size[i] = pg.size;
@@ -157,7 +157,7 @@ void alloc_test() {
         kprintf("TEST: palloc [0x%lx, ",  pg.paddr);
         kprintf("+0x%lx]\n", pg.size);
     }
-    kprintf("Available memory: %lx", get_free_memory());
+    kprintf("Available memory: 0x%lx", get_free_memory());
 
     for(int i=0; i<NTEST; ++i) {
         pg.size = temp_size[i];
@@ -166,10 +166,10 @@ void alloc_test() {
         kprintf("TEST: free [0x%lx, ",  pg.paddr);
         kprintf("+0x%lx]\n", pg.size);
     }
-    kprintf("Available memory: %lx", get_free_memory());
+    kprintf("Available memory: 0x%lx", get_free_memory());
 
     temp_addr[0] = pgalloc();
-    kprintf("TEST: palloc at %x\n, ",  temp_addr[0]);
+    kprintf("TEST: palloc at 0x%x\n",  temp_addr[0]);
 }
 #endif
 

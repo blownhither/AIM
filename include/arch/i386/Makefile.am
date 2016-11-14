@@ -26,5 +26,6 @@ noinst_HEADERS = \
 	cr.h \
 	segment.h \
 	platform.h \
-	vga.h
+	vga.h \
+	proc.h
 

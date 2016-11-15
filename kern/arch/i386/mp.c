@@ -78,6 +78,12 @@ mpenter(void)
 // extern pde_t entrypgdir[];  // For entry.S
 extern void *entryother_start, *entryother_end;
 
+struct segdesc mp_gdt[3] = {
+  SEG(0,0,0,0),
+  SEG(STA_X|STA_R, 0, 0xffffffff, 0),
+  SEG(STA_W, 0, 0xffffffff, 0)
+};
+
 void
 startothers(void)
 {
@@ -107,9 +113,7 @@ startothers(void)
     *(void**)(code-4) = stack + KSTACKSIZE;	// used as temp stack
     *(void**)(code-8) = mpenter;	// used as callback
     *(int**)(code-12) = (void *) kva2pa(entrypgdir);
-
-    //TODO:
-    *(struct segdesc **)(code-16) = 3;
+    *(struct segdesc **)(code-16) = mp_gdt;
     lapicstartap(c->apicid, kva2pa(code));
 
     // wait for cpu to finish mpmain()
@@ -117,4 +121,3 @@ startothers(void)
       ;
   }
 }
-

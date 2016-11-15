@@ -40,7 +40,7 @@ entryother_start:
   # virtual addresses map directly to physical addresses so that the
   # effective memory map doesn't change during the transition.
   // lgdt    entryother_gdtdesc  // cannot do this when linked with .32 code
-  mov     $(ENT_OTHER_CODE_START - 20), %eax
+  mov     $(ENT_OTHER_CODE_START - 16), %eax
   lgdt    (%eax)
   movl    %cr0, %eax
   orl     $CR0_PE, %eax
@@ -92,6 +92,8 @@ spin:
 entryother_end:
   jmp entryother_end
 
+/*
+
 .p2align 2
 entryother_gdt:
   SEG_NULLASM
@@ -103,3 +105,4 @@ entryother_gdtdesc:
   .word   (entryother_gdtdesc - entryother_gdt - 1)
   .long   entryother_gdt
 
+*/

@@ -31,5 +31,6 @@ noinst_HEADERS = \
 	vga.h \
 	proc.h \
 	arch-init.h \
-	mp.h
+	mp.h \
+	mutex.h
 

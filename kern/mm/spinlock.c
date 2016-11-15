@@ -6,7 +6,7 @@
 #include "aim/spinlock.h"
 #include "aim/panic.h"
 #include "asm.h"
-
+/*
 void
 initlock(struct spinlock *lk, char *name)
 {
@@ -97,7 +97,7 @@ holding(struct spinlock *lock)
 
 void pushcli() {panic("Implement me");}
 void popcli() {panic("Implement me");}
-
+*/
 // Pushcli/popcli are like cli/sti except that they are matched:
 // it takes two popcli to undo two pushcli.  Also, if interrupts
 // are off, then pushcli, popcli leaves them off.

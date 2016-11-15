@@ -22,6 +22,19 @@ uchar ioapicid;
 
 volatile uint32_t *lapic;
 
+// %GS util functions
+void set_gs_cpu(struct cpu *temp) {
+  __asm__ __volatile__(
+    "mov %0, %%eax;"
+    "mov %%eax, %%gs:0"
+    ::"m"(temp));
+}
+struct cpu *get_gs_cpu() {
+  struct cpu *temp;
+  __asm__ __volatile__("mov %%gs, %0":"=m"(temp));
+  return temp;
+}
+
 // MP init 
 
 static uchar

@@ -35,6 +35,7 @@
 #include <drivers/io/io-port.h>
 #include <platform.h>
 #include <arch-init.h>
+#include <mutex.h>
 
 void set_cr_mmu();
 
@@ -211,6 +212,8 @@ void master_early_continue() {
 
     mpinit();
     startothers();
+
+    
 
     panic("Start other processors successful");
 

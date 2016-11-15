@@ -41,7 +41,8 @@ libarch_la_SOURCES = \
 	ioapic.c \
 	vga.c \
 	arch_libc.c \
-	mp.c
+	mp.c \
+	mutex.c
 
 libarch_la_LIBADD = \
 	mach-$(MACH)/libmach.la

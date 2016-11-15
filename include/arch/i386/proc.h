@@ -33,18 +33,12 @@ extern int ncpu;
 // This is similar to how thread-local variables are implemented
 // in thread libraries such as Linux pthreads.
 // extern struct cpu *cpu asm("%gs:0");       // &cpus[cpunum()]
+// extern struct cpu *cpu asm("%gs:0");       // &cpus[cpunum()]
 // extern struct proc *proc asm("%gs:4");     // cpus[cpunum()].proc
 
-/*
-static void set_gs_cpu(struct cpu *temp) {
-  asm("mov %0, %gs:0":"=m"(temp));
-}
-static struct cpu *get_gs_cpu() {
-  struct cpu *temp;
-  __asm__ __volatile__("mov %%gs, %0":"=m"(temp));
-  return temp;
-}
-*/
+void set_gs_cpu(struct cpu *temp);
+struct cpu *get_gs_cpu();
+
 
 //PAGEBREAK: 17
 // Saved registers for kernel context switches.

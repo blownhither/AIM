@@ -12,6 +12,8 @@ void idt_init();
 int cpunum(void);
 void mpinit(void);
 void seginit();
+void picinit();
+void ioapic_init();
 
 void master_early_simple_alloc(void *start, void *end);
 void get_early_end();

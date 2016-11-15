@@ -40,6 +40,8 @@ entryother_start:
   # virtual addresses map directly to physical addresses so that the
   # effective memory map doesn't change during the transition.
   // lgdt    entryother_gdtdesc  // cannot do this when linked with .32 code
+  
+  //TODO: check
   mov     $(ENT_OTHER_CODE_START - 16), %eax
   lgdt    (%eax)
   movl    %cr0, %eax

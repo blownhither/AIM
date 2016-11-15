@@ -57,10 +57,9 @@ mpmain(void)
   kprintf("cpu%d: starting\n", cpunum());
   idt_init();       // load idt register
 
-  static struct cpu *c asm("%gs:0");
-  xchg(&c->started, 1); // tell startothers() we're up
-  //TODO: struct cpu *c = get_gs_cpu();
-  // xchg(&c->started, 1);
+  panic("This cpu is on!");
+
+  //TODO: xchg(&c->started, 1);
 
   //TODO: scheduler();     // start running processes
 }
@@ -76,7 +75,7 @@ mpenter(void)
 }
 
 // extern pde_t entrypgdir[];  // For entry.S
-void entryother_start();
+void entryother_start();  // found in entryothers.S
 void entryother_end();
 
 struct segdesc mp_gdt[3] = {

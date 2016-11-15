@@ -7,7 +7,7 @@
 #include <asm.h>
 #include <proc.h>
 
-void initlock(struct mutex *m, const char *desc){
+void initlock(struct mutex *m, char *desc){
 	m->desc = desc;
 	m->locked = 0;
 	m->cpu = NULL;
@@ -82,7 +82,7 @@ void popcli() {
 }
 
 // semaphore is here
-const char *SEM_LOCK_DESC = "semaphore lock";
+char *SEM_LOCK_DESC = "semaphore lock";
 
 void seminit(struct semaphore *s, int max, char *desc) {
 	s->count = max;
@@ -110,6 +110,6 @@ int single_semdown(struct semaphore *s) {
 }
 
 int semdown(struct semaphore *s) {
-	//TODO: use wait queue
-	panic("semdown: Implement me");
+	// use waitlist in the future!
+	return single_semdown(s);
 }

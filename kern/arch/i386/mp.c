@@ -177,9 +177,9 @@ seginit(void)
 
   // Initialize cpu-local storage.
   // Note: cpu is defined in proc.h as %gs
-  // TODO: cpu = c;
+  // cpu = c;
   set_gs_cpu(c);
-  // TODO: proc = 0;
+  // proc = 0;
   set_gs_proc(NULL);
 }
 
@@ -232,8 +232,8 @@ startothers(void)
   // _binary_entryother_start.
   code = (uchar *)(0x7000);
   
-  //TODO: if we trust 0x7000?
-  //TODO: memmove(code, _binary_entryother_start, (uint)_binary_entryother_size);
+
+  //memmove(code, _binary_entryother_start, (uint)_binary_entryother_size);
   memmove(code, (void *)entryother_start, (uint)(entryother_end - entryother_start));
 
   for(c = cpus; c < cpus+ncpu; c++){

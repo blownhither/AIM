@@ -28,6 +28,7 @@
 #include "aim/kalloc.h"
 #include "asm.h"
 #include "segment.h"
+#include "arch-init.h"
 
 extern uint32_t __bss_start_kern, __bss_end_kern;
 
@@ -71,6 +72,7 @@ void arch_early_init(void)
 {
 
     arch_load_gdt();    // get a new gdt other than bootloader one
+    // this gdt is temporary until seginit() is available
     set_cr_mmu();
     // jump to arch_early_continue
     

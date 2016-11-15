@@ -178,9 +178,9 @@ seginit(void)
   // Initialize cpu-local storage.
   // Note: cpu is defined in proc.h as %gs
   // TODO: cpu = c;
-  // set_gs_cpu(c);
+  set_gs_cpu(c);
   // TODO: proc = 0;
-
+  set_gs_proc(NULL);
 }
 
 // Common CPU setup code.
@@ -193,7 +193,8 @@ mpmain(void)
 
   panic("This cpu is on!");
 
-  //TODO: xchg(&c->started, 1);
+  struct cpu *c = get_gs_cpu();
+  xchg(&c->started, 1);
 
   //TODO: scheduler();     // start running processes
 }
@@ -258,6 +259,7 @@ startothers(void)
 
 
 // %GS util functions
+
 void set_gs_cpu(struct cpu *temp) {
   __asm__ __volatile__(
     "mov %0, %%eax;"

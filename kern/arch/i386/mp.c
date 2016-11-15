@@ -44,20 +44,24 @@ seginit(void)
   // Initialize cpu-local storage.
   // Note: cpu is defined in proc.h as %gs
   // TODO: cpu = c;
+  // set_gs_cpu(c);
   // TODO: proc = 0;
 
 }
 
-
-
 // Common CPU setup code.
-static void
+void
 mpmain(void)
 {
   //cprintf("cpu%d: starting\n", cpunum());
   kprintf("cpu%d: starting\n", cpunum());
   idt_init();       // load idt register
-  xchg(&cpu->started, 1); // tell startothers() we're up
+
+  static struct cpu *c asm("%gs:0");
+  xchg(&c->started, 1); // tell startothers() we're up
+  // struct cpu *c = get_gs_cpu();
+  // xchg(&c->started, 1);
+
   //TODO: scheduler();     // start running processes
 }
 
@@ -74,7 +78,7 @@ mpenter(void)
 // extern pde_t entrypgdir[];  // For entry.S
 
 // Start the non-boot (AP) processors.
-static void
+void
 startothers(void)
 {
   // extern uchar _binary_entryother_start[], _binary_entryother_size[];

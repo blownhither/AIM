@@ -17,6 +17,8 @@ void page_alloc_init(addr_t start, addr_t end);
 void master_later_alloc();
 void trap_init();
 
+void startothers(void);
+
 #endif	//__ASSEMBLER__
 
 #endif

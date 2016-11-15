@@ -209,7 +209,9 @@ void master_early_continue() {
     */
     //asm("sti");
 
-    panic("Device init done");
+    startothers();
+
+    panic("Other processors on");
 
     sleep1();
 

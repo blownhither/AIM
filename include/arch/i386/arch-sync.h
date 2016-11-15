@@ -19,10 +19,13 @@
 #ifndef _ARCH_SYNC_H
 #define _ARCH_SYNC_H
 
+#include "mutex.h"
+
 #ifndef __ASSEMBLER__
 
-typedef unsigned int lock_t;
-#define EMPTY_LOCK(lock)	(UNLOCKED)
+typedef struct mutex lock_t;
+#define LOCK_INITIALIZER 
+// #define EMPTY_LOCK(lock)	(UNLOCKED)
 
 static inline
 void spinlock_init(lock_t *lock)

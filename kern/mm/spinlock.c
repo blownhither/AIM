@@ -95,8 +95,8 @@ holding(struct spinlock *lock)
     //TODO:&& lock->cpu == cpu;
 }
 
-void pushcli() {cli();}
-void popcli() {sti();}
+void pushcli() {panic("Implement me");}
+void popcli() {panic("Implement me");}
 
 // Pushcli/popcli are like cli/sti except that they are matched:
 // it takes two popcli to undo two pushcli.  Also, if interrupts

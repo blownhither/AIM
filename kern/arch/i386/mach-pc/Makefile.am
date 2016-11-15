@@ -17,19 +17,9 @@
 
 include $(top_srcdir)/env.am
 
-noinst_HEADERS = \
-	arch-boot.h \
-	arch-io.h \
-	arch-irq.h \
-	arch-mmu.h \
-	arch-sync.h \
-	arch-trap.h \
-	asm.h \
-	cr.h \
-	segment.h \
-	platform.h \
-	vga.h \
-	proc.h \
-	arch-init.h \
-	mp.h
+noinst_LTLIBRARIES = \
+	libmach.la
+
+libmach_la_SOURCES = \
+	devtree.c
 

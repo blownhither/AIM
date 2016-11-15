@@ -17,6 +17,11 @@
 
 include $(top_srcdir)/env.am
 
+SUBDIRS = \
+	$(PREFIXED_MACH)
+DIST_SUBDIRS = \
+	mach-pc
+
 dist_noinst_DATA = vmaim.lds.S
 
 noinst_LTLIBRARIES = \
@@ -37,4 +42,7 @@ libarch_la_SOURCES = \
 	vga.c \
 	arch_libc.c \
 	mp.c
-	
+
+libarch_la_LIBADD = \
+	mach-$(MACH)/libmach.la
+

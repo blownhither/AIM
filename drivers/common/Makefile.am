@@ -1,4 +1,4 @@
-# Copyright (C) 2016 David Gao <davidgao1001@gmail.com>
+# Copyright (C) 2016 Gan Quan <coin2028@hotmail.com>
 #
 # This file is part of AIM.
 #
@@ -17,19 +17,7 @@
 
 include $(top_srcdir)/env.am
 
-noinst_HEADERS = \
-	arch-boot.h \
-	arch-io.h \
-	arch-irq.h \
-	arch-mmu.h \
-	arch-sync.h \
-	arch-trap.h \
-	asm.h \
-	cr.h \
-	segment.h \
-	platform.h \
-	vga.h \
-	proc.h \
-	arch-init.h \
-	mp.h
+noinst_LTLIBRARIES = libcommon.la
+
+libcommon_la_SOURCES = core.c
 

@@ -54,7 +54,7 @@ seginit(void)
 static void
 mpmain(void)
 {
-  //TODO: cprintf("cpu%d: starting\n", cpunum());
+  //cprintf("cpu%d: starting\n", cpunum());
   kprintf("cpu%d: starting\n", cpunum());
   idt_init();       // load idt register
   xchg(&cpu->started, 1); // tell startothers() we're up

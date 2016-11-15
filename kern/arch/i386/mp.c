@@ -78,7 +78,6 @@ mpenter(void)
 // extern pde_t entrypgdir[];  // For entry.S
 extern void *entryother_start, *entryother_end;
 
-// Start the non-boot (AP) processors.
 void
 startothers(void)
 {
@@ -94,7 +93,7 @@ startothers(void)
   
   //TODO: if we trust 0x7000?
   //TODO: memmove(code, _binary_entryother_start, (uint)_binary_entryother_size);
-  memmove(code, entryother_start, entryother_end - entryother_start);
+  memmove(code, entryother_start, (uint)(entryother_end - entryother_start));
 
   for(c = cpus; c < cpus+ncpu; c++){
     if(c == cpus+cpunum())  // We've started already.

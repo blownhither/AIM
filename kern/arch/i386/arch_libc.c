@@ -18,3 +18,22 @@ int strcmp(const char *a, const char *b) {
     else
         return *a - *b;
 }
+
+void *memmove(void *dst00, const void *src00, size_t length) {
+	char *src0 = (char *)src00, *dst0 = (char *)dst00;
+	if(src0 > dst0 && src0 < dst0 + length) {
+		// sequential
+		for(int i=0; i<length; ++i) {
+			*src0++ = *dst0++;
+		}
+	}
+	else {
+		// reverse
+		src0 += length - 1;
+		dst0 += length - 1;
+		for(int i=0; i<length; ++i) {
+			*src0-- = *dst0--;
+		}
+	}
+	return dst00;
+}

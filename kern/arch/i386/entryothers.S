@@ -15,6 +15,10 @@
 #
 # This code combines elements of bootasm.S and entry.S.
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <segment.h>
 #include <asm.h>
 #include <cr.h>
@@ -33,7 +37,7 @@ entryother_start:
   # Switch from real to protected mode.  Use a bootstrap GDT that makes
   # virtual addresses map directly to physical addresses so that the
   # effective memory map doesn't change during the transition.
-  // lgdt    entryother_gdtdesc
+  //TODO: lgdt    gdtdesc
   movl    %cr0, %eax
   orl     $CR0_PE, %eax
   movl    %eax, %cr0
@@ -82,7 +86,7 @@ spin:
 
 .globl entryother_end
 entryother_end:
-
+  jmp entryother_end
 
 .p2align 2
 entryother_gdt:

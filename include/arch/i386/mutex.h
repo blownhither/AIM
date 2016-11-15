@@ -10,7 +10,7 @@ struct mutex {
 	struct cpu *cpu;
 };
 
-void initlock(struct mutex *m, char *desc);
+void initlock(struct mutex *m, const char *desc);
 int acquire(struct mutex *m);
 int single_acquire(struct mutex *m);
 int release(struct mutex *m);
@@ -31,7 +31,7 @@ struct semaphore {
 
 int semup(struct semaphore *s);
 int semdown(struct semaphore *s);
-int sinlge_semdown(struct semaphore *s);
+int single_semdown(struct semaphore *s);
 void seminit(struct semaphore *s, int max, char *desc);
 
 #define SEM_INITIALIZER(x) {x, MUTEX_INITIALIZER, NULL}

@@ -226,8 +226,13 @@ void master_early_continue() {
     kputs("Successfully test mutex\n");
 
     struct semaphore s = SEM_INITIALIZER(1);
+
+
+
     single_semdown(&s);
     semup(&s);
+
+    kputs("Successfully test semaphore\n");
 
     sleep1();
 

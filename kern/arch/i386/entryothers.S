@@ -23,6 +23,8 @@
 #include <asm.h>
 #include <cr.h>
 
+#define ENT_OTHER_CODE_START 0x7000
+
 .code16           
 .globl entryother_start
 entryother_start:
@@ -37,7 +39,9 @@ entryother_start:
   # Switch from real to protected mode.  Use a bootstrap GDT that makes
   # virtual addresses map directly to physical addresses so that the
   # effective memory map doesn't change during the transition.
-  //TODO: lgdt    gdtdesc
+  // lgdt    entryother_gdtdesc  // cannot do this when linked with .32 code
+  mov     $(ENT_OTHER_CODE_START - 20), %eax
+  lgdt    (%eax)
   movl    %cr0, %eax
   orl     $CR0_PE, %eax
   movl    %eax, %cr0
@@ -64,7 +68,7 @@ entrystart32:
   orl     $(CR4_PSE), %eax
   movl    %eax, %cr4
   # Use entrypgdir as our initial page table
-  movl    (entryother_start-12), %eax
+  movl    (ENT_OTHER_CODE_START-12), %eax
   movl    %eax, %cr3
   # Turn on paging.
   movl    %cr0, %eax
@@ -72,9 +76,9 @@ entrystart32:
   movl    %eax, %cr0
 
   # Switch to the stack allocated by startothers()
-  movl    (entryother_start-4), %esp
+  movl    (ENT_OTHER_CODE_START-4), %esp
   # Call mpenter()
-  call	 *(entryother_start-8)
+  call	 *(ENT_OTHER_CODE_START-8)
 
   movw    $0x8a00, %ax
   movw    %ax, %dx

@@ -59,7 +59,7 @@ mpmain(void)
 
   static struct cpu *c asm("%gs:0");
   xchg(&c->started, 1); // tell startothers() we're up
-  // struct cpu *c = get_gs_cpu();
+  //TODO: struct cpu *c = get_gs_cpu();
   // xchg(&c->started, 1);
 
   //TODO: scheduler();     // start running processes
@@ -108,6 +108,8 @@ startothers(void)
     *(void**)(code-8) = mpenter;	// used as callback
     *(int**)(code-12) = (void *) kva2pa(entrypgdir);
 
+    //TODO:
+    *(struct segdesc **)(code-16) = 3;
     lapicstartap(c->apicid, kva2pa(code));
 
     // wait for cpu to finish mpmain()

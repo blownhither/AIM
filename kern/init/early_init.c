@@ -210,6 +210,14 @@ void master_early_continue() {
     */
     //asm("sti");
 
+    struct mutex m = MUTEX_INITIALIZER;
+    acquire(&m);
+    release(&m);
+    acquire(&m);
+    release(&m);
+    
+    sleep1();
+
     mpinit();
     startothers();
 

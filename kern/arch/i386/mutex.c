@@ -15,7 +15,8 @@ void initlock(struct mutex *m, char *desc){
 
 int single_acquire(struct mutex *m) {
 	pushcli();
-	//TODO: test holding here
+	if(holding(m))
+		panic("single_acquire: trying to lock again");
 	//while(xchg(&m->locked, 1) != 0)
 	//	;
 	if(xchg(&m->locked, 1) != 0) {
@@ -23,27 +24,29 @@ int single_acquire(struct mutex *m) {
 		return 0;
 	}
 	// __snyc_synchronize();
-	//TODO: set up lock cpu info
+	m->cpu = get_gs_cpu();
 	return 1;
 }
 
 int acquire(struct mutex *m) {
 	pushcli();
-	//TODO: test holding here
+	if(holding(m))
+		panic("acquire: trying to lock again");
 	//while(xchg(&m->locked, 1) != 0)
 	//	;
 	while(xchg(&m->locked, 1) != 0) {
 		return 0;
 	}
 	// __snyc_synchronize();
-	//TODO: set up lock cpu info
+	m->cpu = get_gs_cpu();
 	return 1;
 }
 
 int release(struct mutex *m){
-	//TODO: Test holding
+	if(!holding(m))
+		panic("release: Trying to release other's lock");
 	if(!m->locked)
-		panic("Trying to release unlocked lock");
+		panic("release: Trying to release unlocked lock");
 	m->cpu = NULL;
 	// __snyc_synchronize();
 	asm volatile("movl $0, %0" : "+m" (m->locked) : );
@@ -52,7 +55,7 @@ int release(struct mutex *m){
 }
 
 bool holding(struct mutex *m) {
-	panic("Implement me: need cpu info in lock");
+	return m->locked && m->cpu == get_gs_cpu();
 }
 
 void pushcli() {
@@ -72,7 +75,7 @@ void popcli() {
 		panic("popcli: Interruptable");
 
 	struct cpu *cpu = get_gs_cpu();
-	
+
 	if(--cpu->ncli < 0)
 		panic("popcli: Illegal behaviour");
 	if(cpu->ncli == 0 && cpu->intena) {

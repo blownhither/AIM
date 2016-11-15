@@ -191,10 +191,10 @@ mpmain(void)
   kprintf("cpu%d: starting\n", cpunum());
   idt_init();       // load idt register
 
-  panic("This cpu is on!");
-
   struct cpu *c = get_gs_cpu();
   xchg(&c->started, 1);
+
+  panic("This cpu is on!");
 
   //TODO: scheduler();     // start running processes
 }
@@ -252,12 +252,6 @@ startothers(void)
     *(char *)(0x8000) = 0;
 
     lapicstartap(c->apicid, V2P(code));
-    // wait for cpu to finish mpmain()
-    volatile char *test_char = (char *)0x8000;
-
-    while(*test_char != 7)
-       ;
-    kprintf("other processor hit sth!\n");
     
     while(c->started == 0)
       ;

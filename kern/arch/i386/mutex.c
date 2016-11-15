@@ -7,7 +7,7 @@
 #include <asm.h>
 #include <proc.h>
 
-void initlock(struct mutex *m, char *desc){
+void initlock(struct mutex *m, const char *desc){
 	m->desc = desc;
 	m->locked = 0;
 	m->cpu = NULL;
@@ -44,9 +44,7 @@ int acquire(struct mutex *m) {
 
 int release(struct mutex *m){
 	if(!holding(m))
-		panic("release: Trying to release other's lock");
-	if(!m->locked)
-		panic("release: Trying to release unlocked lock");
+		panic("release: Trying to release unacquired lock");
 	m->cpu = NULL;
 	// __snyc_synchronize();
 	asm volatile("movl $0, %0" : "+m" (m->locked) : );
@@ -81,4 +79,37 @@ void popcli() {
 	if(cpu->ncli == 0 && cpu->intena) {
 		sti();
 	}
+}
+
+// semaphore is here
+const char *SEM_LOCK_DESC = "semaphore lock";
+
+void seminit(struct semaphore *s, int max, char *desc) {
+	s->count = max;
+	s->desc = desc;
+	initlock(&s->lock, SEM_LOCK_DESC);
+}
+
+int semup(struct semaphore *s) {
+	acquire(&s->lock);
+	s->count ++;
+	//TODO: wake up sth.
+	release(&s->lock);
+	return 1;
+}
+
+int single_semdown(struct semaphore *s) {
+	acquire(&s->lock);
+	if(s->count <= 0){
+		//TODO: add wait queue
+		return 0;
+	}
+	s->count --;
+	release(&s->lock);
+	return 1;
+}
+
+int semdown(struct semaphore *s) {
+	//TODO: use wait queue
+	panic("semdown: Implement me");
 }

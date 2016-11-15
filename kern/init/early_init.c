@@ -214,14 +214,20 @@ void master_early_continue() {
     seginit();
     startothers();
 
+    kputs("Successfully start other processors\n");
+
     struct mutex m = MUTEX_INITIALIZER;
-    acquire(&m);
-    acquire(&m);
-    release(&m);
+    // acquire(&m);
+    // acquire(&m);
+    // release(&m);
     acquire(&m);
     release(&m);
 
-    panic("Start other processors successful");
+    kputs("Successfully test mutex\n");
+
+    struct semaphore s = SEM_INITIALIZER(1);
+    single_semdown(&s);
+    semup(&s);
 
     sleep1();
 

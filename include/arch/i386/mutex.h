@@ -21,4 +21,19 @@ void popcli();
 
 #define MUTEX_INITIALIZER {0, NULL, NULL}
 
+struct semaphore {
+	int count;
+	struct mutex lock;
+
+	char *desc;
+
+};
+
+int semup(struct semaphore *s);
+int semdown(struct semaphore *s);
+int sinlge_semdown(struct semaphore *s);
+void seminit(struct semaphore *s, int max, char *desc);
+
+#define SEM_INITIALIZER(x) {x, MUTEX_INITIALIZER, NULL}
+
 #endif

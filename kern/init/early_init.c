@@ -214,9 +214,6 @@ void master_early_continue() {
     );
 
     */
-    //asm("sti");
-
-    
     
     startothers();
 

@@ -25,7 +25,9 @@ void *memmove(void *dst00, const void *src00, size_t length) {
 	if(src0 > dst0 && src0 < dst0 + length) {
 		// sequential
 		for(int i=0; i<length; ++i) {
-			*dst0++ = *src0++;
+			*dst0 = *src0;
+			dst0++;
+			src0++;
 		}
 	}
 	else {
@@ -33,7 +35,9 @@ void *memmove(void *dst00, const void *src00, size_t length) {
 		src0 += length - 1;
 		dst0 += length - 1;
 		for(int i=0; i<length; ++i) {
-			*dst0-- = *src0--;
+			*dst0 = *src0;
+			dst0--;
+			src0--;
 		}
 	}
 	return dst00;
@@ -50,4 +54,14 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 		b++;
 	}
 	return 0;
+}
+
+size_t strlcpy(char *dst, const char *src, size_t dsize) {
+	while(dsize-- && *src != '\0') {
+		*dst = *src;
+		dst++;
+		src++;
+	}
+	*dst = '\0';
+	return dsize;
 }

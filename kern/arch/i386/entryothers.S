@@ -28,12 +28,7 @@
 .code16           
 .globl entryother_start
 entryother_start:
-  cli  
-
-  //mov   $0x7, %eax
-  movb   $0x7, (0x6f00)
-
-  hlt
+  cli   
 
   # Zero data segment registers DS, ES, and SS.
   xorw    %ax,%ax
@@ -53,6 +48,9 @@ entryother_start:
   orl     $CR0_PE, %eax
   movl    %eax, %cr0
 
+  movb   $0x7, (0x8000)
+  hlt
+  
   # Complete the transition to 32-bit protected mode by using a long jmp
   # to reload %cs and %eip.  The segment descriptors are set up with no
   # translation, so that the mapping is still the identity mapping.

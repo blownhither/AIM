@@ -249,11 +249,11 @@ startothers(void)
     *(int**)(code-12) = (void *) V2P(entrypgdir);
     *(struct segdesc **)(code-16) = mp_gdt;
     
-    *(char *)(0x6f00) = 0;
+    *(char *)(0x8000) = 0;
 
     lapicstartap(c->apicid, V2P(code));
     // wait for cpu to finish mpmain()
-    while(*(char *)(0x6f00) != 7)
+    while(*(char *)(0x8000) != 7)
        ;
     kprintf("other processor hit sth!\n");
     while(c->started == 0)

@@ -76,7 +76,8 @@ mpenter(void)
 }
 
 // extern pde_t entrypgdir[];  // For entry.S
-extern void *entryother_start, *entryother_end;
+void entryother_start();
+void entryother_end();
 
 struct segdesc mp_gdt[3] = {
   SEG(0,0,0,0),
@@ -99,7 +100,7 @@ startothers(void)
   
   //TODO: if we trust 0x7000?
   //TODO: memmove(code, _binary_entryother_start, (uint)_binary_entryother_size);
-  memmove(code, entryother_start, (uint)(entryother_end - entryother_start));
+  memmove(code, (void *)entryother_start, (uint)(entryother_end - entryother_start));
 
   for(c = cpus; c < cpus+ncpu; c++){
     if(c == cpus+cpunum())  // We've started already.

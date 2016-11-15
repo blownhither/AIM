@@ -24,7 +24,7 @@ void *memmove(void *dst00, const void *src00, size_t length) {
 	if(src0 > dst0 && src0 < dst0 + length) {
 		// sequential
 		for(int i=0; i<length; ++i) {
-			*src0++ = *dst0++;
+			*dst0++ = *src0++;
 		}
 	}
 	else {
@@ -32,7 +32,7 @@ void *memmove(void *dst00, const void *src00, size_t length) {
 		src0 += length - 1;
 		dst0 += length - 1;
 		for(int i=0; i<length; ++i) {
-			*src0-- = *dst0--;
+			*dst0-- = *src0--;
 		}
 	}
 	return dst00;

@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <aim/console.h>
+#include <aim/pmm.h>
 #include <asm.h>
 #include <arch-mmu.h>
 #include <arch-trap.h>

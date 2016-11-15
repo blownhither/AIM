@@ -9,6 +9,7 @@ void *memset(void *dst, int c, size_t n) {
     stosb(dst, c, (uint32_t)n);
     return dst;
 }
+
 int strcmp(const char *a, const char *b) {
     while(*a == *b && *a!='\0') {
         a++; b++;

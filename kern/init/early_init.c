@@ -34,6 +34,7 @@
 #include <drivers/io/io-mem.h>
 #include <drivers/io/io-port.h>
 #include <platform.h>
+#include <arch-init.h>
 
 void set_cr_mmu();
 
@@ -113,11 +114,7 @@ panic:
     
 }
 
-void master_early_simple_alloc(void *start, void *end);
-void get_early_end();
-void page_alloc_init(addr_t start, addr_t end);
-void master_later_alloc();
-void trap_init();
+
 
 extern addr_t *__early_buf_end;
 void master_early_simple_alloc(void *start, void *end);

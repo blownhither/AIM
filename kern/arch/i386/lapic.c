@@ -12,7 +12,7 @@
 #include <proc.h>
 
 
-#define LAPIC_ADDR 0xFEE00000
+//#define LAPIC_ADDR 0xFEE00000
 
 // Local APIC registers, divided by 4 for use as uint[] indices.
 #define ID      (0x0020/4)   // ID
@@ -58,7 +58,7 @@ lapicw(int index, int value)
 void
 lapic_init(void)
 {
-  lapic = (uint *)LAPIC_ADDR;
+  // lapic = (uint *)LAPIC_ADDR;
   if(!lapic)
     return;
 
@@ -145,6 +145,7 @@ lapiceoi(void)
 
 // Spin for a given number of microseconds.
 // On real hardware would want to tune this dynamically.
+volatile int microdelay_count = 0;
 void
 microdelay(int us)
 {
@@ -166,8 +167,7 @@ lapicstartap(uchar apicid, uint addr)
   // the AP startup code prior to the [universal startup algorithm]."
   outb(CMOS_PORT, 0xF);  // offset 0xF is shutdown code
   outb(CMOS_PORT+1, 0x0A);
-  // TODO: wrv = (ushort*)P2V((0x40<<4 | 0x67));  // Warm reset vector
-  wrv = (ushort*)pa2kva((0x40<<4 | 0x67));  // Warm reset vector
+  wrv = (ushort*)P2V((0x40<<4 | 0x67));  // Warm reset vector
   wrv[0] = 0;
   wrv[1] = addr >> 4;
 

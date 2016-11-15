@@ -6,6 +6,9 @@
 #include <sys/param.h>
 #include <arch-trap.h>
 
+extern int ismp;
+extern uchar ioapicid;
+
 #define IOAPIC  0xFEC00000   // Default physical address of IO APIC
 
 #define REG_ID     0x00  // Register index: ID
@@ -48,16 +51,16 @@ ioapicwrite(int reg, uint data)
 void
 ioapic_init(void)
 {
-  int i, maxintr;
-  // int id;
-  //TODO: if(!ismp)
-  //  return;
+  int i, id, maxintr;
+
+  if(!ismp)
+    return;
 
   ioapic = (volatile struct ioapic*)IOAPIC;
   maxintr = (ioapicread(REG_VER) >> 16) & 0xFF;
-  // id = ioapicread(REG_ID) >> 24;
-  //TODO: if(id != ioapicid)
-  //  cprintf("ioapicinit: id isn't equal to ioapicid; not a MP\n");
+  id = ioapicread(REG_ID) >> 24;
+  if(id != ioapicid)
+    kprintf("ioapicinit: id isn't equal to ioapicid; not a MP\n");
 
   // Mark all interrupts edge-triggered, active high, disabled,
   // and not routed to any CPUs.
@@ -66,7 +69,7 @@ ioapic_init(void)
     ioapicwrite(REG_TABLE+2*i+1, 0);
   }
 }
-/*
+
 void
 ioapicenable(int irq, int cpunum)
 {
@@ -79,4 +82,3 @@ ioapicenable(int irq, int cpunum)
   ioapicwrite(REG_TABLE+2*irq, T_IRQ0 + irq);
   ioapicwrite(REG_TABLE+2*irq+1, cpunum << 24);
 }
-*/

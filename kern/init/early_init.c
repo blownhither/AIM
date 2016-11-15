@@ -193,10 +193,16 @@ void master_early_continue() {
 
     void __global_mzy();
     __global_mzy();
-
+    
+    mpinit();
+    lapic_init();
+    seginit();
+    picinit();
+    ioapic_init();
+    do_initcalls();
     trap_init();
 
-    do_initcalls();
+    
     /*
     kprintf("try int 0x20\n");
     
@@ -210,8 +216,8 @@ void master_early_continue() {
     */
     //asm("sti");
 
-    mpinit();
-    seginit();
+    
+    
     startothers();
 
     kputs("Successfully start other processors\n");

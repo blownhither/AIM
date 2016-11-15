@@ -28,7 +28,10 @@
 .code16           
 .globl entryother_start
 entryother_start:
-  cli            
+  cli  
+
+  //mov   $0x7, %eax
+  movb   $0x7, (0x6f00)
 
   # Zero data segment registers DS, ES, and SS.
   xorw    %ax,%ax

@@ -209,9 +209,10 @@ void master_early_continue() {
     */
     //asm("sti");
 
+    mpinit();
     startothers();
 
-    panic("Other processors on");
+    panic("Start other processors successful");
 
     sleep1();
 

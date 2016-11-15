@@ -20,6 +20,7 @@ int strcmp(const char *a, const char *b) {
 }
 
 void *memmove(void *dst00, const void *src00, size_t length) {
+	//TODO: use asm(movs)
 	char *src0 = (char *)src00, *dst0 = (char *)dst00;
 	if(src0 > dst0 && src0 < dst0 + length) {
 		// sequential
@@ -36,4 +37,17 @@ void *memmove(void *dst00, const void *src00, size_t length) {
 		}
 	}
 	return dst00;
+}
+
+int memcmp(const void *s1, const void *s2, size_t n) {
+	//TODO: use asm(cmps)
+	char *a = (char *)s1, *b = (char *)s2;
+	while(n--) {
+		if(*a != *b) {
+			return *a - *b;
+		}
+		a++;
+		b++;
+	}
+	return 0;
 }

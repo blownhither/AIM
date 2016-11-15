@@ -28,5 +28,6 @@ noinst_HEADERS = \
 	platform.h \
 	vga.h \
 	proc.h \
-	arch-init.h
+	arch-init.h \
+	mp.h
 

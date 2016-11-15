@@ -47,6 +47,14 @@ void trap(struct trapframe *tf) {
 }
 
 
+void trap_init(void) {
+	idt_init();	// prepare int vectors
+
+	lidt((struct gatedesc *)idt, sizeof(idt));
+
+}
+
+
 // I/O Addresses of the two programmable interrupt controllers
 #define IO_PIC1         0x20    // Master (IRQs 0-7)
 #define IO_PIC2         0xA0    // Slave (IRQs 8-15)
@@ -137,37 +145,25 @@ picinit(void)
 
 void init_i8259(void) {
 
-	outb(PORT_PIC_MASTER + 1, 0xFF);
-	outb(PORT_PIC_SLAVE + 1 , 0xFF);
-	
+  outb(PORT_PIC_MASTER + 1, 0xFF);
+  outb(PORT_PIC_SLAVE + 1 , 0xFF);
+  
 
-	outb(PORT_PIC_MASTER, 0x11);
-	outb(PORT_PIC_MASTER + 1, 32);
-	outb(PORT_PIC_MASTER + 1, 1 << 2);
-	outb(PORT_PIC_MASTER + 1, 0x3);
-	outb(PORT_PIC_SLAVE, 0x11);
-	outb(PORT_PIC_SLAVE + 1, 32 + 8);
-	outb(PORT_PIC_SLAVE + 1, 2);
-	outb(PORT_PIC_SLAVE + 1, 0x3);
-	outb(PORT_PIC_MASTER, 0x68);
-	outb(PORT_PIC_MASTER, 0x0A);
-	outb(PORT_PIC_SLAVE, 0x68);
-	outb(PORT_PIC_SLAVE, 0x0A);
+  outb(PORT_PIC_MASTER, 0x11);
+  outb(PORT_PIC_MASTER + 1, 32);
+  outb(PORT_PIC_MASTER + 1, 1 << 2);
+  outb(PORT_PIC_MASTER + 1, 0x3);
+  outb(PORT_PIC_SLAVE, 0x11);
+  outb(PORT_PIC_SLAVE + 1, 32 + 8);
+  outb(PORT_PIC_SLAVE + 1, 2);
+  outb(PORT_PIC_SLAVE + 1, 0x3);
+  outb(PORT_PIC_MASTER, 0x68);
+  outb(PORT_PIC_MASTER, 0x0A);
+  outb(PORT_PIC_SLAVE, 0x68);
+  outb(PORT_PIC_SLAVE, 0x0A);
 }
 
 
 
 
 */
-
-
-void lapic_init();
-void ioapic_init();
-
-void trap_init(void) {
-	idt_init();	// prepare int vectors
-
-	
-	lidt((struct gatedesc *)idt, sizeof(idt));
-
-}

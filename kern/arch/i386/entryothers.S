@@ -33,6 +33,8 @@ entryother_start:
   //mov   $0x7, %eax
   movb   $0x7, (0x6f00)
 
+  hlt
+
   # Zero data segment registers DS, ES, and SS.
   xorw    %ax,%ax
   movw    %ax,%ds

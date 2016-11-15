@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <arch-trap.h>
+#include <aim/console.h>
 
 extern int ismp;
 extern uchar ioapicid;

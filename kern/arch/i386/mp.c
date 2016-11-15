@@ -253,9 +253,12 @@ startothers(void)
 
     lapicstartap(c->apicid, V2P(code));
     // wait for cpu to finish mpmain()
-    while(*(char *)(0x8000) != 7)
+    volatile char *test_char = (char *)0x8000;
+
+    while(*test_char != 7)
        ;
     kprintf("other processor hit sth!\n");
+    
     while(c->started == 0)
       ;
   }

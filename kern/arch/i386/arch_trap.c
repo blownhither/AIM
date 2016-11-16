@@ -30,6 +30,7 @@ void idt_init() {
 	// initlock(&ticklock, "time");
 }
 
+int cpunum();
 void trap(struct trapframe *tf) {
 	long ans;
 	if(tf->trapno == T_SYSCALL) {
@@ -45,8 +46,7 @@ void trap(struct trapframe *tf) {
 		return;
 	}
   if(tf->trapno == 0x79) {
-    struct cpu *c = get_gs_cpu();
-    panic("CPU %d panic on temporary signal 0x79\n", (uint32_t)(c->apicid));
+    panic("CPU %d panic on temporary signal 0x79\n", cpunum());
   }
   kprintf("Receive undefined trapno 0x%x\n", tf->trapno);
 	panic("trap: Implement me for others");

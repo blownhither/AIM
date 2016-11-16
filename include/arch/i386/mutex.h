@@ -2,7 +2,7 @@
 #define _MUTEX_H_ 
 
 #ifndef __ASSEMBLER__
-
+/*
 #include <proc.h>
 
 struct mutex {
@@ -37,6 +37,7 @@ int single_semdown(struct semaphore *s);
 void seminit(struct semaphore *s, int max, char *desc);
 
 #define SEM_INITIALIZER(x) {x, MUTEX_INITIALIZER, NULL}
+*/
 
 #endif	//__ASSEMBLER__
 

@@ -194,7 +194,7 @@ mpmain(void)
   struct cpu *c = get_gs_cpu();
   xchg(&c->started, 1);
 
-  sti();
+  // sti();
 
   while(1);
   //panic("This cpu is on!");
@@ -290,7 +290,7 @@ void set_gs_proc(struct proc *temp) {
 struct proc *get_gs_proc() {
   struct proc *temp;
   __asm__ __volatile__(
-    "mov %%gs:0, %%eax;"
+    "mov %%gs:4, %%eax;"
     "mov %%eax, %0"
     :"=m"(temp)
   );

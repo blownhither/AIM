@@ -2,6 +2,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+/*
 #include <sys/types.h>
 #include <mutex.h>
 #include <asm.h>
@@ -32,11 +33,8 @@ int acquire(struct mutex *m) {
 	pushcli();
 	if(holding(m))
 		panic("acquire: trying to lock again");
-	//while(xchg(&m->locked, 1) != 0)
-	//	;
-	while(xchg(&m->locked, 1) != 0) {
-		return 0;
-	}
+	while(xchg(&m->locked, 1) != 0)
+		;
 	// __snyc_synchronize();
 	m->cpu = get_gs_cpu();
 	return 1;
@@ -113,3 +111,4 @@ int semdown(struct semaphore *s) {
 	// use waitlist in the future!
 	return single_semdown(s);
 }
+*/

@@ -35,6 +35,7 @@
 #include <drivers/io/io-port.h>
 #include <platform.h>
 #include <arch-init.h>
+#include <arch-sync.h>
 #include <mutex.h>
 #include <asm.h>
 
@@ -220,37 +221,30 @@ void master_early_continue() {
 
     kputs("Successfully start other processors\n");
 
-    sti();
+    // sti();
 
-    void ipi_test();
-    ipi_test();
+    void panic_other_cpus();
+    // panic_other_cpus();
 
 
-    struct mutex m = MUTEX_INITIALIZER;
-    // acquire(&m);
-    // acquire(&m);
-    // release(&m);
-    acquire(&m);
-    release(&m);
+    lock_t l = LOCK_INITIALIZER;
+    // spin_lock(&l);
+    // spin_unlock(&l);
+    spin_lock(&l);
+    spin_unlock(&l);
 
     kputs("Successfully test mutex\n");
 
-    struct semaphore s = SEM_INITIALIZER(1);
-
-
-
-    single_semdown(&s);
-    semup(&s);
+    semaphore_t s = SEM_INITIALIZER(2);
+    semaphore_dec(&s);
+    semaphore_inc(&s);
 
     kputs("Successfully test semaphore\n");
 
-    sleep1();
+    panic("Done with tests\n");
 
 }
 
 void inf_loop() {
     while(1);
 }
-
-
-

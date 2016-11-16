@@ -182,7 +182,7 @@ lapicstartap(uchar apicid, uint addr)
   }
 }
 
-void ipi_test() {
+void panic_other_cpus() {
   lapicw(ICRHI, 0);
   lapicw(ICRLO, 0x79 | BCAST | LEVEL);
 }

@@ -27,8 +27,7 @@ noinst_LTLIBRARIES = \
 
 libmm_la_SOURCES = \
 	mmu.c \
-	jump.c \
-	spinlock.c
+	jump.c
 	
 libmm_la_LIBADD = \
 	kmmap/libkmmap.la \

@@ -9,7 +9,9 @@
 #include <segment.h>
 #include <aim/panic.h>
 #include <aim/trap.h>
+#include <aim/console.h>
 #include <asm.h>
+#include <proc.h>
 
 #define NIDT 256
 
@@ -39,9 +41,14 @@ void trap(struct trapframe *tf) {
 		return;
 	}
 	if(tf->trapno >= T_IRQ0 && tf->trapno < T_IRQ0 + 32) {
-		handle_interrupt(tf->trapno - T_IRQ0);
+    handle_interrupt(tf->trapno - T_IRQ0);
 		return;
 	}
+  if(tf->trapno == 0x79) {
+    struct cpu *c = get_gs_cpu();
+    panic("CPU %d panic on temporary signal 0x79\n", (uint32_t)(c->apicid));
+  }
+  kprintf("Receive undefined trapno 0x%x\n", tf->trapno);
 	panic("trap: Implement me for others");
 
 }

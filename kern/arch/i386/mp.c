@@ -189,12 +189,15 @@ mpmain(void)
 {
   //cprintf("cpu%d: starting\n", cpunum());
   kprintf("cpu%d: starting\n", cpunum());
-  idt_init();       // load idt register
-
+  //idt_init();       // load idt register
+  trap_init();
   struct cpu *c = get_gs_cpu();
   xchg(&c->started, 1);
 
-  panic("This cpu is on!");
+  sti();
+
+  while(1);
+  //panic("This cpu is on!");
 
   //TODO: scheduler();     // start running processes
 }

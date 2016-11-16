@@ -182,6 +182,11 @@ lapicstartap(uchar apicid, uint addr)
   }
 }
 
+void ipi_test() {
+  lapicw(ICRHI, 0);
+  lapicw(ICRLO, 0x79 | BCAST | LEVEL);
+}
+
 #define CMOS_STATA   0x0a
 #define CMOS_STATB   0x0b
 #define CMOS_UIP    (1 << 7)        // RTC update in progress

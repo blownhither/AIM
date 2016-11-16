@@ -36,6 +36,7 @@
 #include <platform.h>
 #include <arch-init.h>
 #include <mutex.h>
+#include <asm.h>
 
 void set_cr_mmu();
 
@@ -218,6 +219,12 @@ void master_early_continue() {
     startothers();
 
     kputs("Successfully start other processors\n");
+
+    sti();
+
+    void ipi_test();
+    ipi_test();
+
 
     struct mutex m = MUTEX_INITIALIZER;
     // acquire(&m);

@@ -219,32 +219,43 @@ void master_early_continue() {
     
     startothers();
 
-    kputs("Successfully start other processors\n");
+    // kputs("Successfully start other processors\n");
 
     // sti();
 
-    void panic_other_cpus();
+    // void panic_other_cpus();
     // panic_other_cpus();
 
-
-    lock_t l = LOCK_INITIALIZER;
-    // spin_lock(&l);
-    // spin_unlock(&l);
-    spin_lock(&l);
-    spin_unlock(&l);
-
-    kputs("Successfully test mutex\n");
-
-    semaphore_t s = SEM_INITIALIZER(2);
-    semaphore_dec(&s);
-    semaphore_inc(&s);
-
-    kputs("Successfully test semaphore\n");
-
-    panic("Done with tests\n");
+    main_test();
+    // panic("Done with tests\n");
 
 }
 
 void inf_loop() {
     while(1);
+}
+
+static lock_t lk = LOCK_INITIALIZER;
+static semaphore_t sem = SEM_INITIALIZER(6);
+static int critical_count = 300;
+#define NAP 5
+void para_test() {
+    while(1) {
+        spin_lock(&lk);
+        if(critical_count == 0) {
+            semaphore_dec(&sem);
+            kprintf("\ncpu %d done waiting for %d", cpunum(), sem.val);
+            spin_unlock(&lk);
+            return;
+        }
+        kprintf("%d ", critical_count--);
+
+        spin_unlock(&lk);
+    }
+}
+
+void main_test() {
+    while(sem.val >= 1)
+        ;
+    panic("\nAll processors finished para_test\n");
 }

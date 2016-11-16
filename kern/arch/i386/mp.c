@@ -183,6 +183,8 @@ seginit(void)
   set_gs_proc(NULL);
 }
 
+
+
 // Common CPU setup code.
 void
 mpmain(void)
@@ -194,11 +196,12 @@ mpmain(void)
   struct cpu *c = get_gs_cpu();
   xchg(&c->started, 1);
 
+  void para_test();
+  para_test();
   // sti();
 
-  while(1);
   //panic("This cpu is on!");
-
+  asm("hlt");
   //TODO: scheduler();     // start running processes
 }
 

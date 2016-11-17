@@ -31,7 +31,6 @@ void idt_init() {
 	// initlock(&ticklock, "time");
 }
 
-int cpunum();
 void trap(struct trapframe *tf) {
 	long ans;
 	if(tf->trapno == T_SYSCALL) {
@@ -42,10 +41,6 @@ void trap(struct trapframe *tf) {
 		tf->eax = ans;
 		return;
 	}
-
-  if(tf->trapno == 0xe)
-    kprintf("0x%x ", tf->eip);
-
 	if(tf->trapno >= T_IRQ0 && tf->trapno < T_IRQ0 + 32) {
     handle_interrupt(tf->trapno - T_IRQ0);
 		return;
@@ -53,14 +48,19 @@ void trap(struct trapframe *tf) {
 
   switch(tf->trapno) {
     case T_PANICALL_:
-      local_panic("CPU %d panic on temporary signal 0x79\n", quick_cpunum());
+      local_panic("INT PANICALL: CPU %d panic\n", quick_cpunum());
+      return;
     case T_SHOWEIP_:
-      local_panic("T_SHOWEIP_: CPU %d at 0x%x", quick_cpunum(), __get_eip());
+      local_panic("INT SHOWEIP: CPU %d at 0x%x\n", quick_cpunum(), __get_eip());
+      return;
   }
 
 
   kprintf("CPU %d Receive undefined trapno 0x%x\n", quick_cpunum(), tf->trapno);
-	panic("trap: Implement me\n");
+	
+  asm("hlt");
+
+  panic("trap: Implement me\n");
 
 }
 

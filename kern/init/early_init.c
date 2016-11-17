@@ -202,19 +202,6 @@ void master_early_continue() {
     ioapic_init();
     do_initcalls();
     trap_init();
-
-    
-    /*
-    kprintf("try int 0x20\n");
-    
-    __asm__ __volatile__ (
-    	"mov $0x20, %%eax;"
-    	" int $0x80;"
-    	// "int $0x20;"
-    	::
-    );
-
-    */
     
     startothers();
 
@@ -222,11 +209,10 @@ void master_early_continue() {
 
     // sti();
 
-    // void panic_other_cpus();
-    // panic_other_cpus();
-
     void main_test();
     main_test();
+
+
     // panic("Done with tests\n");
 
 }
@@ -260,29 +246,37 @@ void para_test() {
 
 void main_test() {
 
-    while(!para_test_done)
-        ;
-    int loop_count = 0;
     while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
         ;
     kprintf("\n");
+
+    push_ipi(0x82);
+    asm("hlt");
+
     panic("All processors finished para_test\n"); // panic all cpu
 }
 
-
-
 uint32_t __get_eip() {
-  uint32_t eip;
+  /*uint32_t eip;
   asm volatile(
     "push %%eax;"
     "call temp_get_pc_ax;"
-    "mov %%eax, %0;"
+    //"mov %%eax, %0;"
     "pop %%eax;"
+    "jmp thereafter;"
     "temp_get_pc_ax:"
     "  mov (%%esp), %%eax;"
+    "  mov %%eax, %0;"
     "  ret;"
+    "thereafter:"
     : "=m"(eip)
     :
   );
-  return eip;
+  return eip;*/
+  asm volatile(
+    "mov (%%esp), %%eax;"
+    "ret;"
+    ::
+  );
+  return 0; // to deceive compiler
 }

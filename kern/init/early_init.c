@@ -225,11 +225,7 @@ void master_early_continue() {
     // void panic_other_cpus();
     // panic_other_cpus();
 
-    //push_ipi(0x78);
-
     void main_test();
-    // void para_test();
-    // para_test();
     main_test();
     // panic("Done with tests\n");
 
@@ -270,11 +266,7 @@ void main_test() {
         ;
     int loop_count = 0;
     while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
-        if(loop_count++ > 0x10000) {
-            asm("hlt");
-        }
-    // while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
-    //     ;
+        ;
 
     kprintf("\n");
     panic("All processors finished para_test\n"); // panic all cpu

@@ -226,6 +226,7 @@ void master_early_continue() {
     // void panic_other_cpus();
     // panic_other_cpus();
 
+    void main_test();
     main_test();
     // panic("Done with tests\n");
 
@@ -235,27 +236,34 @@ void inf_loop() {
     while(1);
 }
 
-static lock_t lk = LOCK_INITIALIZER;
-static semaphore_t sem = SEM_INITIALIZER(6);
-static int critical_count = 300;
 #define NAP 5
+static lock_t lk = LOCK_INITIALIZER;
+static semaphore_t sem = SEM_INITIALIZER(NAP);
+static int critical_count = 300;
+volatile static bool para_test_done = false;
 void para_test() {
+    semaphore_dec(&sem);
+    while(sem.val > 0)    // sync all cpu to start together
+        ;
     while(1) {
         spin_lock(&lk);
         if(critical_count == 0) {
-            semaphore_dec(&sem);
-            kprintf("\ncpu %d done waiting for %d", cpunum(), sem.val);
+            kprintf("\ncpu %d done", cpunum());
+            semaphore_inc(&sem);
+            para_test_done = true;
             spin_unlock(&lk);
             return;
         }
-        kprintf("%d ", critical_count--);
-
+        kprintf("%d ", critical_count--);   // countdown
         spin_unlock(&lk);
     }
 }
 
 void main_test() {
-    while(sem.val >= 1)
+    while(!(para_test_done && (sem.val == sem.limit)))
         ;
+    //spin_lock(&lk);
+    kprintf("\n");
     panic("\nAll processors finished para_test\n");
+    //spin_unlock(&lk);
 }

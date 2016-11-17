@@ -26,7 +26,7 @@
 #include <proc.h>
 
 typedef struct mutex {
-	uint32_t locked;
+	volatile uint32_t locked;
 
 	char *desc;
 	struct cpu *cpu;
@@ -72,7 +72,7 @@ bool spin_lock_once(lock_t *m) {
 	// pushcli();
 	if(holding(m))
 		panic("acquire: trying to lock again");
-	while(xchg(&m->locked, 1) != 0)
+	if(xchg(&m->locked, 1) != 0)
 		return 0;
 	// __snyc_synchronize();
 	m->cpu = get_gs_cpu();
@@ -98,7 +98,7 @@ bool spin_is_locked(lock_t *lock)
 
 /* Semaphore */
 typedef struct {
-	int val;
+	volatile int val;
 	int limit;
 	lock_t mutex;
 
@@ -132,18 +132,18 @@ void semaphore_dec(semaphore_t *s)
 	if(s->val <= 0) {
 re_ent:
 		spin_unlock(&s->mutex);
-		#ifdef MZYDEBUG
+#ifdef MZYDEBUG
 		int count = 0;
 		bool count_enable = true;
-		#endif 
+#endif 
 		while(s->val <= 0){
-			#ifdef MZYDEBUG
+#ifdef MZYDEBUG
 			count ++;
 			if(count_enable && count > 0x1000) {
 				kprintf("Warning | semaphore_dec: having waited 0x1000 loops for %s\n", s->desc);
 				count_enable = false;
 			}
-			#endif
+#endif
 		}
 		spin_lock(&s->mutex);
 	}

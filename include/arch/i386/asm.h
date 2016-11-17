@@ -191,7 +191,7 @@ xchg(volatile uint *addr, uint newval)
   return result;
 }
 
-static inline uint
+static inline bool
 cmpxchg(volatile uint *addr, uint oldval, uint newval)
 {
   uint result;
@@ -201,7 +201,7 @@ cmpxchg(volatile uint *addr, uint oldval, uint newval)
     :"r"(newval),"0"(oldval) 
     :"memory"
   );
-  return result;
+  return result == oldval;
 }
 
 static inline uint

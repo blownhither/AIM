@@ -12,6 +12,7 @@
 #include <aim/console.h>
 #include <asm.h>
 #include <proc.h>
+#include <arch-init.h>
 
 #define NIDT 256
 
@@ -41,14 +42,24 @@ void trap(struct trapframe *tf) {
 		tf->eax = ans;
 		return;
 	}
+
+  if(tf->trapno == 0xe)
+    kprintf("0x%x ", tf->eip);
+
 	if(tf->trapno >= T_IRQ0 && tf->trapno < T_IRQ0 + 32) {
     handle_interrupt(tf->trapno - T_IRQ0);
 		return;
 	}
-  if(tf->trapno == 0x79) {
-    local_panic("CPU %d panic on temporary signal 0x79\n", cpunum());
+
+  switch(tf->trapno) {
+    case T_PANICALL_:
+      local_panic("CPU %d panic on temporary signal 0x79\n", quick_cpunum());
+    case T_SHOWEIP_:
+      local_panic("T_SHOWEIP_: CPU %d at 0x%x", quick_cpunum(), __get_eip());
   }
-  kprintf("Receive undefined trapno 0x%x\n", tf->trapno);
+
+
+  kprintf("CPU %d Receive undefined trapno 0x%x\n", quick_cpunum(), tf->trapno);
 	panic("trap: Implement me\n");
 
 }

@@ -128,6 +128,8 @@ void semaphore_init2(semaphore_t *sem, int val, char *desc)
 static inline
 void semaphore_dec(semaphore_t *s)
 {
+	
+	
 	spin_lock(&s->mutex);
 	if(s->val <= 0) {
 re_ent:
@@ -151,6 +153,13 @@ re_ent:
 		goto re_ent;
 	s->val --;
 	spin_unlock(&s->mutex);
+	
+	// while(s->val <= 0)
+	// 	;
+	// int val = s->val;
+	// while(!cmpxchg((uint32_t *)&s->val, val, val-1))
+	// 	;
+
 }
 
 static inline
@@ -162,6 +171,12 @@ void semaphore_inc(semaphore_t *s)
 		panic("semaphore_inc: inc overflow");
 	}
 	spin_unlock(&s->mutex);
+
+	// int val = s->val;
+	// if(val + 1 > s->limit)
+	// 	panic("semaphore_inc: inc overflow");
+	// while(!cmpxchg((uint32_t *)&s->val, val, val+1))
+	// 	;
 }
 
 #define SEM_INITIALIZER(x) {(x), (x), LOCK_INITIALIZER, NULL}

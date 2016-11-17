@@ -99,5 +99,11 @@ void trap(struct trapframe *tf);
 #define IRQ_ERROR       19
 #define IRQ_SPURIOUS    31
 
+// arbitary MZY, tail underscore
+#define T_PANICALL_   0x79
+#define T_SHOWEIP_    0x78
+
+
+
 #endif /* _ARCH_TRAP_H */
 

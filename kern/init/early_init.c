@@ -189,9 +189,8 @@ void master_early_continue() {
     kprintf("3. later simple allocator depends on page allocator\n");
     master_later_alloc();
 
-#ifdef MZYDEBUG
-    alloc_test();
-#endif
+    // alloc_test();
+
 
     void __global_mzy();
     __global_mzy();
@@ -226,6 +225,8 @@ void master_early_continue() {
     // void panic_other_cpus();
     // panic_other_cpus();
 
+    //push_ipi(0x78);
+
     void main_test();
     // void para_test();
     // para_test();
@@ -237,6 +238,8 @@ void master_early_continue() {
 void inf_loop() {
     while(1);
 }
+
+#define CPU3_PRINT(x) if(quick_cpunum() == 5) kprintf("%d ",(x))
 
 #define NAP 5
 static lock_t lk = LOCK_INITIALIZER;
@@ -250,7 +253,7 @@ void para_test() {
     while(1) {
         spin_lock(&lk);             // enter critical section for countdown
         if(critical_count == 0) {   // about to finish the test
-            kprintf("\ncpu %d done", cpunum());
+            kprintf("\ncpu %d done", quick_cpunum());
             semaphore_inc(&sem);    // submit work
             para_test_done = true;
             spin_unlock(&lk);       // unlock late for ordered output
@@ -258,16 +261,39 @@ void para_test() {
         }
         kprintf("%d ", critical_count--);   // countdown
         spin_unlock(&lk);
-
-        volatile int delay = 0x2000;
-        while(delay--);
-
     }
 }
 
 void main_test() {
-    while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
+
+    while(!para_test_done)
         ;
+    int loop_count = 0;
+    while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
+        if(loop_count++ > 0x10000) {
+            asm("hlt");
+        }
+    // while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
+    //     ;
+
     kprintf("\n");
     panic("All processors finished para_test\n"); // panic all cpu
+}
+
+
+
+uint32_t __get_eip() {
+  uint32_t eip;
+  asm volatile(
+    "push %%eax;"
+    "call temp_get_pc_ax;"
+    "mov %%eax, %0;"
+    "pop %%eax;"
+    "temp_get_pc_ax:"
+    "  mov (%%esp), %%eax;"
+    "  ret;"
+    : "=m"(eip)
+    :
+  );
+  return eip;
 }

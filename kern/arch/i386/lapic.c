@@ -187,6 +187,12 @@ void panic_other_cpus() {
   lapicw(ICRLO, 0x79 | BCAST | LEVEL);
 }
 
+void push_ipi(uint8_t intnum) {
+  lapicw(ICRHI, 0);
+  lapicw(ICRLO, intnum | BCAST | LEVEL);
+}
+
+
 #define CMOS_STATA   0x0a
 #define CMOS_STATB   0x0b
 #define CMOS_UIP    (1 << 7)        // RTC update in progress

@@ -195,13 +195,14 @@ mpmain(void)
   trap_init();
   struct cpu *c = get_gs_cpu();
   xchg(&c->started, 1);
+  
+  sti();
 
   void para_test();
   para_test();
-  // sti();
-
+  while(1);
   //panic("This cpu is on!");
-  asm("hlt");
+  //asm("hlt");
   //TODO: scheduler();     // start running processes
 }
 

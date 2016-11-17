@@ -23,6 +23,8 @@ void trap_init();
 
 void startothers(void);
 
+int quick_cpunum();
+
 #endif	//__ASSEMBLER__
 
 #endif

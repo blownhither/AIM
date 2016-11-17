@@ -46,10 +46,10 @@ void trap(struct trapframe *tf) {
 		return;
 	}
   if(tf->trapno == 0x79) {
-    panic("CPU %d panic on temporary signal 0x79\n", cpunum());
+    local_panic("CPU %d panic on temporary signal 0x79\n", cpunum());
   }
   kprintf("Receive undefined trapno 0x%x\n", tf->trapno);
-	panic("trap: Implement me for others");
+	panic("trap: Implement me\n");
 
 }
 

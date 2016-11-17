@@ -227,6 +227,8 @@ void master_early_continue() {
     // panic_other_cpus();
 
     void main_test();
+    // void para_test();
+    // para_test();
     main_test();
     // panic("Done with tests\n");
 
@@ -243,27 +245,29 @@ static int critical_count = 300;
 volatile static bool para_test_done = false;
 void para_test() {
     semaphore_dec(&sem);
-    while(sem.val > 0)    // sync all cpu to start together
+    while(sem.val > 0)              // sync all cpu to start together
         ;
     while(1) {
-        spin_lock(&lk);
-        if(critical_count == 0) {
+        spin_lock(&lk);             // enter critical section for countdown
+        if(critical_count == 0) {   // about to finish the test
             kprintf("\ncpu %d done", cpunum());
-            semaphore_inc(&sem);
+            semaphore_inc(&sem);    // submit work
             para_test_done = true;
-            spin_unlock(&lk);
+            spin_unlock(&lk);       // unlock late for ordered output
             return;
         }
         kprintf("%d ", critical_count--);   // countdown
         spin_unlock(&lk);
+
+        volatile int delay = 0x2000;
+        while(delay--);
+
     }
 }
 
 void main_test() {
-    while(!(para_test_done && (sem.val == sem.limit)))
+    while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
         ;
-    //spin_lock(&lk);
     kprintf("\n");
-    panic("\nAll processors finished para_test\n");
-    //spin_unlock(&lk);
+    panic("All processors finished para_test\n"); // panic all cpu
 }

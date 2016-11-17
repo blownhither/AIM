@@ -299,3 +299,7 @@ struct proc *get_gs_proc() {
   );
   return temp;
 }
+
+int quick_cpunum() {
+  return (get_gs_cpu() - cpus);
+}

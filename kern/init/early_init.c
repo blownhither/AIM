@@ -235,8 +235,6 @@ void inf_loop() {
     while(1);
 }
 
-#define CPU3_PRINT(x) if(quick_cpunum() == 5) kprintf("%d ",(x))
-
 #define NAP 5
 static lock_t lk = LOCK_INITIALIZER;
 static semaphore_t sem = SEM_INITIALIZER(NAP);
@@ -244,7 +242,7 @@ static int critical_count = 300;
 volatile static bool para_test_done = false;
 void para_test() {
     semaphore_dec(&sem);
-    while(sem.val > 0)              // sync all cpu to start together
+    while(sem.val > 0 && !para_test_done)   // sync all cpu to start together
         ;
     while(1) {
         spin_lock(&lk);             // enter critical section for countdown
@@ -267,7 +265,6 @@ void main_test() {
     int loop_count = 0;
     while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
         ;
-
     kprintf("\n");
     panic("All processors finished para_test\n"); // panic all cpu
 }

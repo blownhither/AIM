@@ -200,9 +200,9 @@ mpmain(void)
 
   void para_test();
   para_test();
-  while(1);
+  //while(1);
   //panic("This cpu is on!");
-  //asm("hlt");
+  asm("hlt");
   //TODO: scheduler();     // start running processes
 }
 

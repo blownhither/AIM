@@ -249,10 +249,6 @@ void main_test() {
     while(!(para_test_done && (sem.val == sem.limit)))  // every CPU submit
         ;
     kprintf("\n");
-
-    push_ipi(0x82);
-    asm("hlt");
-
     panic("All processors finished para_test\n"); // panic all cpu
 }
 

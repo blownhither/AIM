@@ -251,28 +251,3 @@ void main_test() {
     kprintf("\n");
     panic("All processors finished para_test\n"); // panic all cpu
 }
-
-uint32_t __get_eip() {
-  /*uint32_t eip;
-  asm volatile(
-    "push %%eax;"
-    "call temp_get_pc_ax;"
-    //"mov %%eax, %0;"
-    "pop %%eax;"
-    "jmp thereafter;"
-    "temp_get_pc_ax:"
-    "  mov (%%esp), %%eax;"
-    "  mov %%eax, %0;"
-    "  ret;"
-    "thereafter:"
-    : "=m"(eip)
-    :
-  );
-  return eip;*/
-  asm volatile(
-    "mov (%%esp), %%eax;"
-    "ret;"
-    ::
-  );
-  return 0; // to deceive compiler
-}

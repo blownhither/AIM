@@ -184,7 +184,7 @@ lapicstartap(uchar apicid, uint addr)
 
 void panic_other_cpus() {
   lapicw(ICRHI, 0);
-  lapicw(ICRLO, 0x91 | BCAST | LEVEL);
+  lapicw(ICRLO, T_PANICALL_ | BCAST | LEVEL);
 }
 
 void push_ipi(uint8_t intnum) {

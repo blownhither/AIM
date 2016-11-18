@@ -73,6 +73,16 @@ void trap_init(void) {
 }
 
 
+uint32_t __get_eip() {
+  asm volatile(
+    "mov (%%esp), %%eax;"
+    "ret;"
+    ::
+  );
+  return 0; // to deceive compiler
+}
+
+
 // I/O Addresses of the two programmable interrupt controllers
 #define IO_PIC1         0x20    // Master (IRQs 0-7)
 #define IO_PIC2         0xA0    // Slave (IRQs 8-15)

@@ -18,9 +18,9 @@ addr_t* kalloc(void);
 int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
 	void *vaddr, size_t size) {
     
-    void *va = (void *)PGROUNDDOWN((uint32_t)vaddr);
-    void *end = (void *)PGROUNDUP((uint32_t)vaddr + size - 1);
-    paddr = PGROUNDDOWN(paddr);
+    void *va = (void *)PGROUNDDOWN_4M((uint32_t)vaddr);
+    void *end = (void *)PGROUNDUP_4M((uint32_t)vaddr + size - 1);
+    paddr = PGROUNDDOWN_4M(paddr);
 
     pte_t *pte;
     for(; va <= end; va += PGSIZE_EXT) {
@@ -30,24 +30,7 @@ int page_index_early_map(pgindex_t *boot_page_index, addr_t paddr,
     }
     return 1;
 }
-/*
-static int set_early_pages_perm(pgindex_t *boot_page_index, void *va, 
-    void *end, uint32_t perm) {
-    pte_t *pte;
-    for(; va < end; va += PGSIZE) {
-        pte = (pte_t *)&boot_page_index[PDX(va)];
-        *pte = (uint32_t)(PTE_ADDR(*pte) | PTE_FLAGS(perm));
-    }
-    return end - va;
-}
-*/
 
-/*
-static void page_early_clear_user(pgindex_t *i) {
-    uint32_t n = KERN_BASE / (4<<20);   // 4M page 
-    memset(i, 0, n << 2);   
-}
-*/
 // Set up linear mapping for early mapping
 void early_mm_init(void) {
     // extern uint32_t __bss_end_kern;
